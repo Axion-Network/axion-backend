@@ -1,0 +1,8 @@
+/venv/
+/*/migrations/
+/*/*/migrations/
+/__pycache__/
+/*/__pycache__/
+/*/*/__pycache__/
+/hex2x_backend/settings_local.py
+gunicorn.conf.py
