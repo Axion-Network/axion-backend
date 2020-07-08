@@ -30,15 +30,15 @@ def bytearray_to_bytestr(value):
 def sign_message(message):
     priv = secp256k1.PrivateKey(binascii.unhexlify(BACKEND_PRIV))
     signature = priv.ecdsa_recoverable_serialize(priv.ecdsa_sign_recoverable(message, raw=True))
-    signature = signature[0] + bytearray_to_bytestr([signature[1]])
-    return '0x' + binascii.hexlify(signature)
+    rec_bytes = '1c' if signature[1] == 1 else '1b'
+    return '0x' + binascii.hexlify(signature[0]).decode('utf-8') + rec_bytes
 
 
 def get_user_signature(network, hex_address, hex_amount):
     w3 = initiate_web3(network)
     converted_message = convert_message_to_hash(w3, hex_amount, hex_address)
     print(converted_message)
-    signed_message = sign_message(w3, converted_message)
+    signed_message = sign_message(converted_message)
     print(signed_message)
     return signed_message
 
@@ -54,3 +54,6 @@ def sign_send_tx(w3, chain_id, contract_tx):
 
 # 0x4B346C42D212bBD0Bf85A01B1da80C2841149EA2
 # 5
+
+# 0x09c8CB55EfD34f89B21C43cE7d4D4c4dAB87D45b
+# 10
