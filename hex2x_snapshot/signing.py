@@ -26,9 +26,9 @@ def get_user_signature(network, hex_address, hex_amount):
     return {'msg_hash': converted_message, 'signature': signed_message}
 
 
-def sign_send_tx(w3, chain_id, contract_tx):
+def sign_send_tx(w3, chain_id, gas, contract_tx):
     nonce = w3.eth.getTransactionCoint(BACKEND_ADDR)
-    tx_fields = {'chainId': chain_id, 'gas': 1000000, 'gasPrice': w3.toWei('30', 'gwei'), 'nonce': nonce}
+    tx_fields = {'chainId': chain_id, 'gas': gas, 'gasPrice': w3.toWei('30', 'gwei'), 'nonce': nonce}
     tx = contract_tx.buildTransaction(tx_fields)
     signed = w3.eth.account.sign_transaction(tx, BACKEND_PRIV)
     raw_tx = signed.rawTransaction

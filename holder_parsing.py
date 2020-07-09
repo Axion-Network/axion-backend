@@ -1,9 +1,16 @@
 import requests
+from datetime import datetime
 from decimal import Decimal
 from collections import defaultdict
+from time import sleep
 import json
+import os
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hex2x_backend.settings')
+import django
+django.setup()
 
-from .web3int import W3int
+from hex2x_snapshot.web3int import W3int
+from hex2x_snapshot.models import HexUser
 
 HEX_WIN_TOKEN_ADDRESS = '0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39'
 CONTRACT_CREATION_BLOCK = 9041184
@@ -55,8 +62,11 @@ def start_stop_to_hex(from_block, to_block):
     return hex(from_block), hex(to_block)
 
 
-def iterate_from_beginning():
-    start_block = CONTRACT_CREATION_BLOCK
+def log_time():
+    print(str(datetime.now()), flush=True)
+
+
+def iterate_from(start_block):
     step_block = start_block + 1000
 
     while step_block <= MAINNET_STOP_BLOCK:
@@ -64,8 +74,27 @@ def iterate_from_beginning():
         from_block, to_block = start_stop_to_hex(start_block, step_block)
         addresses = get_contract_transfers(HEX_WIN_TOKEN_ADDRESS, from_block, to_block)
 
+        log_time()
+        print('Addresses in batch', len(addresses), flush=True)
+        print('Current block part', start_block, 'to', step_block, flush=True)
+
         start_block += 1000
         step_block = start_block + 1000
+
+        if addresses:
+            i = 1
+            for addr in addresses:
+                print('{curr}/{total} Address: {addr}'.format(curr=i, total=len(addresses), addr=addr))
+                if HexUser.objects.filter(user_address=addr).first() is None:
+                    user = HexUser(user_address=addr)
+                    user.save()
+
+                i += 1
+
+
+def iterate_from_beginning():
+    start_block = CONTRACT_CREATION_BLOCK
+    iterate_from(start_block)
 
 
 def get_hex_balance_for_address(address):
@@ -78,3 +107,9 @@ def get_hex_balance_for_address(address):
     conv_address = w3.interface.toChecksumAddress(address.lower())
     balance = hex_contract.functions.balanceOf(conv_address).call()
     return balance
+
+
+if __name__ == '__main__':
+    log_time()
+    print('Starting full db sync in 30s', flush=True)
+    iterate_from_beginning()
