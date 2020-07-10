@@ -6,3 +6,4 @@
 /*/*/__pycache__/
 /hex2x_backend/settings_local.py
 gunicorn.conf.py
+.env
