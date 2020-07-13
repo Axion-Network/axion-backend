@@ -9,7 +9,7 @@ from hex2x_backend.settings import SNAPSHOT_CONTRACT_ADDRESS
 def load_contract(contract_address):
     w3 = W3int('infura', 'ropsten')
 
-    with open('../ERC20Snapshot_abi.json', 'r') as f:
+    with open('./ERC20Snapshot_abi.json', 'r') as f:
         snapshot_contract_abi = json.loads(f.read())
 
     snapshot_contract = w3.interface.eth.contract(address=contract_address, abi=snapshot_contract_abi)
@@ -20,7 +20,7 @@ def send_to_contract(w3, snapshot_contract, hex_user):
     gas_limit = w3.interface.eth.getBlock('latest')['gasLimit']
     chain_id = w3.interface.eth.chainId
 
-    tx = snapshot_contract.functions.addToList(hex_user.user_address, hex_user.hex_amount)
+    tx = snapshot_contract.functions.addToSnapshot(hex_user.user_address, hex_user.hex_amount)
     tx_hash = sign_send_tx(w3, chain_id, gas_limit, tx)
     return tx_hash
 
@@ -33,8 +33,8 @@ def send_to_contract_batch(w3, snapshot_contract, count_start, count_end):
     address_list = []
     amount_list = []
     for user in user_list:
-        address_list.append(user.user_address)
-        amount_list.append(user.hex_amount)
-    tx = snapshot_contract.functions.addToListMultiple(address_list, amount_list)
-    tx_hash = sign_send_tx(w3, chain_id, gas_limit, tx)
+        address_list.append(w3.interface.toChecksumAddress(user.user_address.lower()))
+        amount_list.append(int(user.hex_amount))
+    tx = snapshot_contract.functions.addToSnapshotMultiple(address_list, amount_list)
+    tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx)
     return tx_hash

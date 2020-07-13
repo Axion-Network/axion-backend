@@ -97,16 +97,53 @@ def iterate_from_beginning():
     iterate_from(start_block)
 
 
-def get_hex_balance_for_address(address):
-    w3 = W3int('parity')
-
+def load_hex_contract(web3_interface):
     with open('./HEX_abi.json', 'r') as f:
         erc20_abi = json.loads(f.read())
 
-    hex_contract = w3.interface.eth.contract(address=HEX_WIN_TOKEN_ADDRESS, abi=erc20_abi)
-    conv_address = w3.interface.toChecksumAddress(address.lower())
+    hex_contract = web3_interface.eth.contract(address=HEX_WIN_TOKEN_ADDRESS, abi=erc20_abi)
+    return hex_contract
+
+
+def get_hex_balance_for_multiple_address(w3_int, hex_contract, address):
+    conv_address = w3_int.toChecksumAddress(address.lower())
     balance = hex_contract.functions.balanceOf(conv_address).call()
     return balance
+
+
+def get_hex_balance_for_address(address):
+    w3 = W3int('parity')
+
+    hex_contract = load_hex_contract(w3.interface)
+
+    balance = get_hex_balance_for_multiple_address(w3.interface, hex_contract)
+    return balance
+
+
+def stake_response_to_dict(stake):
+    return {
+        'stake_id': stake[0],
+        'staked_hearts': stake[1],
+        'stake_shares': stake[2],
+        'locked_day': stake[3],
+        'staked_days': stake[4],
+        'unlocked_day': stake[5],
+        'is_auto_stake': stake[6]
+    }
+
+
+def get_stakes_for_address(address):
+    w3 = W3int('parity')
+
+    hex_contract = load_hex_contract(w3.interface)
+    conv_address = w3.interface.toChecksumAddress(address.lower())
+    stake_count = hex_contract.functions.stakeCount(conv_address).call()
+    stake_list = []
+    for i in range(stake_count):
+        stake = hex_contract.functions.stakeLists(conv_address, i).call()
+        stake_list.append(stake_response_to_dict(stake))
+
+    return {'total': stake_count, 'stakes': stake_list}
 
 
 if __name__ == '__main__':
