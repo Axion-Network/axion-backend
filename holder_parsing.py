@@ -105,19 +105,21 @@ def load_hex_contract(web3_interface):
     return hex_contract
 
 
-def get_hex_balance_for_multiple_address(w3_int, hex_contract, address):
-    conv_address = w3_int.toChecksumAddress(address.lower())
-    balance = hex_contract.functions.balanceOf(conv_address).call()
-    return balance
+def get_hex_balance_for_multiple_address(w3_int, hex_contract, addr_list):
+    balance_info = {}
+
+    for addr in addr_list:
+        conv_address = w3_int.toChecksumAddress(addr.lower())
+        balance_info[addr] = hex_contract.functions.balanceOf(conv_address).call()
+
+    return balance_info
 
 
 def get_hex_balance_for_address(address):
     w3 = W3int('parity')
-
     hex_contract = load_hex_contract(w3.interface)
-
-    balance = get_hex_balance_for_multiple_address(w3.interface, hex_contract)
-    return balance
+    balance = get_hex_balance_for_multiple_address(w3.interface, hex_contract, [address])
+    return balance[address]
 
 
 def stake_response_to_dict(stake):
@@ -144,6 +146,22 @@ def get_stakes_for_address(address):
         stake_list.append(stake_response_to_dict(stake))
 
     return {'total': stake_count, 'stakes': stake_list}
+
+
+def get_current_hex_and_hearts(address):
+    hex_balance = get_hex_balance_for_address(address)
+    stakes_count = get_stakes_for_address(address)
+    stake_list = stakes_count['stakes']
+
+    total_hearts = 0
+    for stake in stake_list:
+        total_hearts += stake['staked_hearts']
+
+    return {
+        'hex': hex_balance,
+        'hearts_total': total_hearts,
+        'hex_hearts_total': hex_balance + total_hearts
+    }
 
 
 if __name__ == '__main__':
