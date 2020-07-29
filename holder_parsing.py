@@ -1,16 +1,14 @@
-import requests
 from datetime import datetime
 from decimal import Decimal
 from collections import defaultdict
-from time import sleep
 import json
 import os
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hex2x_backend.settings')
 import django
 django.setup()
 
-from hex2x_snapshot.web3int import W3int
-from hex2x_snapshot.models import HexUser
+from hex2x_backend.snapshot.web3int import W3int
+from hex2x_backend.snapshot.models import HexUser
 
 HEX_WIN_TOKEN_ADDRESS = '0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39'
 CONTRACT_CREATION_BLOCK = 9041184

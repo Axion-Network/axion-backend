@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'hex2x_snapshot.apps.Hex2XSnapshotConfig',
+    'hex2x_backend.snapshot.apps.Hex2XSnapshotConfig',
     'django_extensions'
 ]
 
@@ -79,9 +79,9 @@ WSGI_APPLICATION = 'hex2x_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'hex2x_snapshot',
-        'USER': 'hex2x_snapshot',
-        'PASSWORD': 'hex2x_snapshot',
+        'NAME': 'snapshot',
+        'USER': 'snapshot',
+        'PASSWORD': 'snapshot',
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }

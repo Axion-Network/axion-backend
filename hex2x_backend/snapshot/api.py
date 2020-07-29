@@ -36,3 +36,5 @@ def regenerate_db_amount_signatures_from(count_start, count_stop=None):
         hex_user.user_hash = sign_info['msg_hash'].hex()
         hex_user.hash_signature = sign_info['signature']
         hex_user.save()
+
+
