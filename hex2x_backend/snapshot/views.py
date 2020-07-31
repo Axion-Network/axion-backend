@@ -1,3 +1,11 @@
-from django.shortcuts import render
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-# Create your views here.
+from .models import HexUser
+from .serializers import HexAddressSerializer
+
+
+class HexAddressViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = HexUser.objects.all()
+    serializer_class = HexAddressSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]

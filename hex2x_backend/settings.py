@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'hex2x_backend.snapshot.apps.Hex2XSnapshotConfig',
+    'rest_framework',
+    'drf_yasg',
     'django_extensions'
 ]
 
