@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'hex2x_backend.snapshot.apps.Hex2XSnapshotConfig',
     'rest_framework',
     'drf_yasg',
-    'django_extensions'
+    'django_extensions',
+    'hex2x_backend.snapshot'
 ]
 
 MIDDLEWARE = [
@@ -126,6 +127,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 STATIC_URL = '/static/'
 
 try:
