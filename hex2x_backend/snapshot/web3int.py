@@ -28,6 +28,7 @@ class W3int():
     def init_parity(self):
         self.url = 'http://{ip}:{port}'.format(ip=PARITY_IP, port=PARITY_WS_PORT)
         self.interface = Web3(HTTPProvider(self.url))
+        #self.interface = Web3(WebsocketProvider(self.url))
 
     def get_http_rpc_response(self, method, params=[]):
         if self.provider == 'infura':

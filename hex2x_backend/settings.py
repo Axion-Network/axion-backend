@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'drf_yasg',
     'django_extensions',
-    'hex2x_backend.snapshot'
+#    'hex2x_backend.snapshot'
 ]
 
 MIDDLEWARE = [
