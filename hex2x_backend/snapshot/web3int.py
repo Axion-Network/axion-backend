@@ -1,13 +1,14 @@
 from web3 import Web3, WebsocketProvider, HTTPProvider
 import requests
 
-from hex2x_backend.settings import WEB3_INFURA_PROJECT_ID, PARITY_IP, PARITY_WS_PORT
+from hex2x_backend.settings import WEB3_INFURA_PROJECT_ID, PARITY_IP, PARITY_WS_PORT, PARITY_HTTP_PORT
 
 
 class W3int():
     interface = None
     network = None
     url = None
+    url_http = None
     provider = None
 
     def __init__(self, provider='infura', network=None):
@@ -26,8 +27,10 @@ class W3int():
         return
 
     def init_parity(self):
-        self.url = 'http://{ip}:{port}'.format(ip=PARITY_IP, port=PARITY_WS_PORT)
-        self.interface = Web3(HTTPProvider(self.url))
+        self.url = 'ws://{ip}:{port}'.format(ip=PARITY_IP, port=PARITY_WS_PORT)
+        self.interface = Web3(WebsocketProvider(self.url))
+        self.url_http = 'http://{ip}:{port}'.format(ip=PARITY_IP, port=PARITY_HTTP_PORT)
+        self.interface_http = Web3(HTTPProvider(self.url_http))
         #self.interface = Web3(WebsocketProvider(self.url))
 
     def get_http_rpc_response(self, method, params=[]):
@@ -43,5 +46,5 @@ class W3int():
             params = params or []
             data = {"jsonrpc": "2.0", "method": method, "params": params, "id": 1}
             headers = {"Content-Type": "application/json"}
-            response = requests.post(self.url, headers=headers, json=data)
+            response = requests.post(self.url_http, headers=headers, json=data)
             return response.json()

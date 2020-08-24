@@ -3,6 +3,18 @@ from decimal import Decimal
 from collections import defaultdict
 import json
 import os
+
+try:
+    from web3.utils.abi import get_constructor_abi, merge_args_and_kwargs
+    from web3.utils.events import get_event_data
+    from web3.utils.filters import construct_event_filter_params
+    from web3.utils.contracts import encode_abi
+except ImportError:
+    from web3._utils.abi import get_constructor_abi, merge_args_and_kwargs
+    from web3._utils.events import get_event_data
+    from web3._utils.filters import construct_event_filter_params
+    from web3._utils.contracts import encode_abi
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hex2x_backend.settings')
 import django
 django.setup()

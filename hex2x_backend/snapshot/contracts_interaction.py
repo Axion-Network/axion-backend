@@ -1,7 +1,9 @@
 from .web3int import W3int
 from .signing import sign_send_tx
 from .models import HexUser
+
 import json
+from datetime import datetime
 
 from hex2x_backend.settings import SNAPSHOT_CONTRACT_ADDRESS
 
@@ -50,4 +52,22 @@ def send_to_snapshot_batch(w3, snapshot_contract, count_start, count_end):
     tx = snapshot_contract.functions.addToSnapshotMultiple(address_list, amount_list)
     tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx)
     return tx_hash
+
+
+def send_to_snapshot_portions(start, stop):
+    step_part = start + 400
+
+    w3, contract = load_snapshot_contract(SNAPSHOT_CONTRACT_ADDRESS)
+    while step_part <= stop:
+        print(str(datetime.now()), flush=True)
+        print('Current part', start, 'to', step_part, flush=True)
+
+        start += 400
+        step_block = start + 400
+
+        try:
+            send_to_snapshot_batch(w3, contract, start, step_part)
+        except Exception as e:
+            print('cannot send batch', start, stop)
+            print(e)
 
