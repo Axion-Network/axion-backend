@@ -29,5 +29,4 @@ class HexAddressViewSet(viewsets.ReadOnlyModelViewSet):
             data = serializer.to_representation(kwargs)
             data_dict = dict(data)
             data_dict['hex_amount'] = 0
-            print(data_dict)
             return Response(data_dict)
