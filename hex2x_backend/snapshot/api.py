@@ -43,8 +43,8 @@ def regenerate_db_amount_signatures_from(count_start, count_stop=None):
         hex_user.save()
 
 
-def generate_and_save_signature(hex_user):
-    sign_info = get_user_signature('mainnet', hex_user.user_address, int(hex_user.hex_amount))
+def generate_and_save_signature(hex_user, network='mainnet'):
+    sign_info = get_user_signature(network, hex_user.user_address, int(hex_user.hex_amount))
     hex_user.user_hash = sign_info['msg_hash'].hex()
     hex_user.hash_signature = sign_info['signature']
     hex_user.save()
