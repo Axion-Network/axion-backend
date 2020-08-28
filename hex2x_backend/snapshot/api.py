@@ -1,5 +1,5 @@
 from .models import HexUser
-from holder_parsing import get_hex_balance_for_address
+from holder_parsing import get_hex_balance_for_address, get_hex_balance_for_multiple_address
 from .signing import get_user_signature
 from .web3int import W3int
 from holder_parsing import load_hex_contract
@@ -43,3 +43,8 @@ def regenerate_db_amount_signatures_from(count_start, count_stop=None):
         hex_user.save()
 
 
+def generate_and_save_signature(hex_user):
+    sign_info = get_user_signature('mainnet', hex_user.user_address, int(hex_user.hex_amount))
+    hex_user.user_hash = sign_info['msg_hash'].hex()
+    hex_user.hash_signature = sign_info['signature']
+    hex_user.save()
