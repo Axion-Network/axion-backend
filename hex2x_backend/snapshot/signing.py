@@ -3,7 +3,7 @@ import secp256k1
 
 from eth_abi import encode_single
 
-from hex2x_backend.settings import WEB3_INFURA_PROJECT_ID, BACKEND_ADDR, BACKEND_PRIV
+from hex2x_backend.settings import WEB3_INFURA_PROJECT_ID, BACKEND_ADDR, BACKEND_PRIV, SNAPSHOT_SIGNING_PRIV
 from .web3int import W3int
 
 
@@ -13,7 +13,7 @@ def convert_message_to_hash(w3, hex_amount, hex_user_address):
 
 
 def sign_message(message):
-    priv = secp256k1.PrivateKey(binascii.unhexlify(BACKEND_PRIV))
+    priv = secp256k1.PrivateKey(binascii.unhexlify(SNAPSHOT_SIGNING_PRIV))
     signature = priv.ecdsa_recoverable_serialize(priv.ecdsa_sign_recoverable(message, raw=True))
     rec_bytes = '1c' if signature[1] == 1 else '1b'
     return '0x' + binascii.hexlify(signature[0]).decode('utf-8') + rec_bytes

@@ -48,3 +48,4 @@ def generate_and_save_signature(hex_user):
     hex_user.user_hash = sign_info['msg_hash'].hex()
     hex_user.hash_signature = sign_info['signature']
     hex_user.save()
+    print('user:', hex_user.user_address, 'hash:', hex_user.user_hash, 'signature:', hex_user.hash_signature)
