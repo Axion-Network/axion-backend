@@ -1,5 +1,5 @@
 from hex2x_backend.tokenholders.models import TokenStakeStart, TokenStakeEnd
-from .models import HexUser, OpenedStake
+from .models import HexUser, SnapshotOpenedStake
 from holder_parsing import get_hex_balance_for_address, get_hex_balance_for_multiple_address
 from .signing import get_user_signature
 from .web3int import W3int
@@ -58,7 +58,7 @@ def make_opened_stake_snapshot():
     for stake in started_stakes:
         ended_stake = TokenStakeEnd.objects.filter(address=stake.address, stake_id=stake.id)
         if len(ended_stake) == 1:
-            opened_stake = OpenedStake(
+            opened_stake = SnapshotOpenedStake(
                 address=stake.address,
                 stake_id=stake.stake_id,
                 data0=stake.data0,
