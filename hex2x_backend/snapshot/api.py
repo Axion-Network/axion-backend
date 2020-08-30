@@ -94,7 +94,7 @@ def make_balance_snapshot():
             continue
 
         if transfer.from_address != ETHEREUM_ZERO_ADDRESS:
-            snapshot_address_1 = SnapshotAddressHexBalance.objects.get_or_create(address=transfer.from_address)
+            snapshot_address_1, created = SnapshotAddressHexBalance.objects.get_or_create(address=transfer.from_address)
             snapshot_address_1.balance -= transfer.amount
             snapshot_address_1.save()
             print('Block', transfer.block_number, 'transfer', transfer.id,
@@ -102,7 +102,7 @@ def make_balance_snapshot():
                   )
 
         if transfer.to_address not in [ETHEREUM_ZERO_ADDRESS, HEX_WIN_TOKEN_ADDRESS]:
-            snapshot_address_2 = SnapshotAddressHexBalance.objects.get_or_create(address=transfer.to_address)
+            snapshot_address_2, created = SnapshotAddressHexBalance.objects.get_or_create(address=transfer.to_address)
             snapshot_address_2.balance += transfer.amount
             snapshot_address_2.save()
             print('Block', transfer.block_number, 'transfer', transfer.id,
