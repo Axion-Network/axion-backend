@@ -88,11 +88,11 @@ def parse_and_save_stakes(event_type, from_block, to_block):
                 shares=parsed_event['from_bits']['shares'],
                 days=parsed_event['from_bits']['days'],
                 is_autostake=parsed_event['from_bits']['is_autostake'],
-                tx_hash=parsed_event['tx_hash'],
+                tx_hash=parsed_event['tx_hash'].hex(),
                 block_number=parsed_event['block']
             )
 
-            # started_stake.save()
+            started_stake.save()
 
             print('Saved started stake',
                   started_stake.id, started_stake.address, started_stake.stake_id, started_stake.data0,
@@ -119,9 +119,5 @@ def iterate_dump_stakes(event_type, start_block, stop_block):
         step_block = start_block + 1000
 
 
-def iterate_dump_stake_start_all():
-    iterate_dump_stakes('stake_start', TRANSFERS_STARTED_BLOCK, MAINNET_STOP_BLOCK)
-
-
-def iterate_dump_stake_end_all():
-    iterate_dump_stakes('stake_end', TRANSFERS_STARTED_BLOCK, MAINNET_STOP_BLOCK)
+def iterate_dump_stake_all(event_type):
+    iterate_dump_stakes(event_type, TRANSFERS_STARTED_BLOCK, MAINNET_STOP_BLOCK)
