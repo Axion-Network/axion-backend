@@ -78,5 +78,7 @@ def make_opened_stake_snapshot():
                   opened_stake.timestamp, opened_stake.hearts, opened_stake.shares, opened_stake.days,
                   opened_stake.is_autostake, opened_stake.tx_hash
                   )
+        elif len(ended_stake) == 0:
+            continue
         else:
             print('multiple results found for', stake.id, 'skipping')
