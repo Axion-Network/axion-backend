@@ -38,10 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'hex2x_backend.snapshot.apps.Hex2XSnapshotConfig',
+    'hex2x_backend.tokenholders.apps.Hex2XTokenholdersConfig',
     'rest_framework',
     'drf_yasg',
     'django_extensions',
-#    'hex2x_backend.snapshot'
 ]
 
 MIDDLEWARE = [

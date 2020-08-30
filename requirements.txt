@@ -35,6 +35,7 @@ eth-utils==1.9.0
 ethereum==2.3.2
 fake-useragent==0.1.11
 future==0.18.2
+gunicorn==20.0.4
 hexbytes==0.2.1
 idna==2.10
 importlib-metadata==1.7.0

@@ -119,3 +119,9 @@ def iterate_dump_transfers_all():
 #     start_block = TRANSFERS_STARTED_BLOCK
 #     iterate_from(start_block)
 
+if __name__ == '__main__':
+    import os
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'hex2x_backend.settings')
+    import django
+    django.setup()
+    iterate_dump_transfers_all()
