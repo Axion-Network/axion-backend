@@ -69,8 +69,8 @@ def parse_stake_end(event):
     data0 = event['args']['data0']
     data1 = event['args']['data1']
 
-    extended_data_0 = '0x' + hex(data0[2:]).zfill(64)
-    extended_data_1 = '0x' + hex(data1[2:]).zfill(64)
+    extended_data_0 = '0x' + hex(data0)[2:].zfill(64)
+    extended_data_1 = '0x' + hex(data1)[2:].zfill(64)
 
     bit_start_time = 40 // 4
     bit_start_hearts = 112 // 4
