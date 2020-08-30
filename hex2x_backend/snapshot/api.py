@@ -1,10 +1,12 @@
-from hex2x_backend.tokenholders.models import TokenStakeStart, TokenStakeEnd
-from .models import HexUser, SnapshotOpenedStake
+from hex2x_backend.tokenholders.models import TokenStakeStart, TokenStakeEnd, TokenTransfer
+from hex2x_backend.tokenholders.common import HEX_WIN_TOKEN_ADDRESS
+from .models import HexUser, SnapshotOpenedStake, SnapshotAddressHexBalance
 from holder_parsing import get_hex_balance_for_address, get_hex_balance_for_multiple_address
 from .signing import get_user_signature
 from .web3int import W3int
 from holder_parsing import load_hex_contract
 
+ETHEREUM_ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
 
 def regenerate_db_amount_signatures():
     all_users = HexUser.objects.all().order_by('id')
@@ -82,3 +84,27 @@ def make_opened_stake_snapshot():
             continue
         else:
             print('multiple results found for', stake.id, 'skipping')
+
+
+def make_balance_snapshot():
+    all_transfers = TokenTransfer.objects.all()
+
+    for transfer in all_transfers:
+        if transfer.from_address == transfer.to_address:
+            continue
+
+        if transfer.from_address != ETHEREUM_ZERO_ADDRESS:
+            snapshot_address_1 = SnapshotAddressHexBalance.objects.get_or_create(address=transfer.from_address)
+            snapshot_address_1.balance -= transfer.amount
+            snapshot_address_1.save()
+            print('Block', transfer.block_number, 'transfer', transfer.id,
+                  'address', snapshot_address_1.address, 'updated, balance:', snapshot_address_1.balance
+                  )
+
+        if transfer.to_address not in [ETHEREUM_ZERO_ADDRESS, HEX_WIN_TOKEN_ADDRESS]:
+            snapshot_address_2 = SnapshotAddressHexBalance.objects.get_or_create(address=transfer.to_address)
+            snapshot_address_2.balance += transfer.amount
+            snapshot_address_2.save()
+            print('Block', transfer.block_number, 'transfer', transfer.id,
+                  'address', snapshot_address_2.address, 'updated, balance:', snapshot_address_2.balance
+                  )
