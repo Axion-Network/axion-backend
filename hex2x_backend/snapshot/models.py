@@ -11,5 +11,14 @@ class HexUser(models.Model):
     hash_signature = models.CharField(max_length=256, null=True, default=None)
 
 
-class OpenedStake(TokenStakeStart):
-    pass
+class SnapshotOpenedStake(models.Model):
+    address = models.CharField(max_length=512)
+    stake_id = models.IntegerField()
+    data0 = models.CharField(max_length=512)
+    timestamp = models.IntegerField()
+    hearts = models.DecimalField(max_digits=len(str(2 ** 256)), decimal_places=0)
+    shares = models.DecimalField(max_digits=len(str(2 ** 256)), decimal_places=0)
+    days = models.IntegerField()
+    is_autostake = models.BooleanField(default=False)
+    tx_hash = models.CharField(max_length=512, null=True, default=None)
+    block_number = models.IntegerField(null=True, default=None)
