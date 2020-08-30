@@ -2,14 +2,23 @@ from .web3int import W3int
 from .signing import sign_send_tx
 from .models import HexUser
 
+import os
 import json
 from datetime import datetime
 
-from hex2x_backend.settings import SNAPSHOT_CONTRACT_ADDRESS
+from dotenv import load_dotenv
+from eth_abi import encode_single
+
+from hex2x_backend.settings import BASE_DIR, SNAPSHOT_SIGNING_ADDR
 
 
-def load_contract(contract_address, abi_path):
-    w3 = W3int('infura', 'ropsten')
+def load_contracts_dotenv():
+    path = os.path.join(BASE_DIR, '.env')
+    load_dotenv(dotenv_path=path)
+
+
+def load_contract(contract_address, abi_path, network):
+    w3 = W3int('infura', network)
 
     with open(abi_path, 'r') as f:
         snapshot_contract_abi = json.loads(f.read())
@@ -18,15 +27,15 @@ def load_contract(contract_address, abi_path):
     return w3, snapshot_contract
 
 
-def load_snapshot_contract(contract_ddress):
-    abi_path = './ERC20Snapshot_abi.json'
-    w3, contract = load_contract(contract_ddress, abi_path)
+def load_snapshot_contract(contract_ddress, network='rinkeby'):
+    abi_path = os.path.join(BASE_DIR, 'ERC20Snapshot_abi.json')
+    w3, contract = load_contract(contract_ddress, abi_path, network)
     return w3, contract
 
 
-def load_swap_contract(contract_address):
-    abi_path = './ForeignSwap_abi.json'
-    w3, contract = load_contract(contract_address, abi_path)
+def load_swap_contract(contract_address, network='rinkeby'):
+    abi_path = os.path.join(BASE_DIR, 'foreignswap.json')
+    w3, contract = load_contract(contract_address, abi_path, network)
     return w3, contract
 
 
@@ -57,7 +66,9 @@ def send_to_snapshot_batch(w3, snapshot_contract, count_start, count_end):
 def send_to_snapshot_portions(start, stop):
     step_part = start + 400
 
-    w3, contract = load_snapshot_contract(SNAPSHOT_CONTRACT_ADDRESS)
+    snapshot_contract_address = os.getenv('SNAPSHOT_CONTRACT_ADDRESS')
+
+    w3, contract = load_snapshot_contract(snapshot_contract_address)
     while step_part <= stop:
         print(str(datetime.now()), flush=True)
         print('Current part', start, 'to', step_part, flush=True)
@@ -70,4 +81,70 @@ def send_to_snapshot_portions(start, stop):
         except Exception as e:
             print('cannot send batch', start, stop)
             print(e)
+
+
+def init_foreign_swap_contract(network='rinkeby'):
+    load_contracts_dotenv()
+
+    foreign_swap_address = os.getenv('FOREIGN_SWAP_ADDRESS')
+
+    w3, contract = load_swap_contract(foreign_swap_address, network)
+
+    gas_limit = w3.interface.eth.getBlock('latest')['gasLimit']
+    chain_id = w3.interface.eth.chainId
+
+    try:
+        signer_address = SNAPSHOT_SIGNING_ADDR
+        day_seconds = os.getenv('DAY_SECONDS')
+        max_claim_amount = os.getenv('MAX_CLAIM_AMOUNT')
+        token_address = os.getenv('TOKEN_ADDRESS')
+        daily_auction_address = os.getenv('DAILY_AUCTION_ADDRESS')
+        weekly_auction_address = os.getenv('WEEKLY_AUCTION_ADDRESS')
+        staking_adrress = os.getenv('STAKING_ADDRESS')
+        bpd_address = os.getenv('BPD_ADDRESS')
+        total_snapshot_amount = os.getenv('TOTAL_SNAPSHOT_AMOUNT')
+        total_snapshot_addresses = os.getenv('TOTAL_SNAPSHOT_ADDRESSES')
+
+        # init_signature = '(address,uint256,uint256,address,address,address,address,address,uint256,uint256)'
+        # init_args = [
+        #     signer_address,
+        #     int(day_seconds),
+        #     int(max_claim_amount),
+        #     token_address,
+        #     daily_auction_address,
+        #     weekly_auction_address,
+        #     staking_adrress,
+        #     bpd_address,
+        #     int(total_snapshot_addresses),
+        #     int(total_snapshot_amount)
+        # ]
+        #
+        # encoded_params = encode_single(init_signature, init_args)
+        # #print(encoded_params, flush=True)
+        #
+        # tx_data = contract.encodeABI('init', args=init_args)
+        #
+        # print(tx_data)
+
+        tx = contract.functions.init(
+            signer_address,
+            int(day_seconds),
+            int(max_claim_amount),
+            token_address,
+            daily_auction_address,
+            weekly_auction_address,
+            staking_adrress,
+            bpd_address,
+            int(total_snapshot_amount),
+            int(total_snapshot_addresses)
+        )
+        print('tx', tx.__dict__, flush=True)
+
+        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx)
+        return tx_hash
+
+    except Exception as e:
+        print('Transaction failed to send, reason:', e)
+
+
 

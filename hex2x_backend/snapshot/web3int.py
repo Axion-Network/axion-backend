@@ -1,10 +1,11 @@
 from web3 import Web3, WebsocketProvider, HTTPProvider
+from web3.middleware import geth_poa_middleware
 import requests
 
 from hex2x_backend.settings import WEB3_INFURA_PROJECT_ID, PARITY_IP, PARITY_WS_PORT, PARITY_HTTP_PORT
 
 
-class W3int():
+class W3int:
     interface = None
     network = None
     url = None
@@ -24,6 +25,8 @@ class W3int():
         self.url = 'wss://{subdomain}.infura.io/ws/v3/{proj_id}' \
             .format(subdomain=network, proj_id=WEB3_INFURA_PROJECT_ID)
         self.interface = Web3(WebsocketProvider(self.url))
+        if network == 'rinkeby':
+            self.interface.middleware_onion.inject(geth_poa_middleware, layer=0)
         return
 
     def init_parity(self):
