@@ -1,21 +1,6 @@
-import json
-
 from hex2x_backend.snapshot.web3int import W3int
 from .models import TokenTransfer
-
-
-HEX_WIN_TOKEN_ADDRESS = '0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39'
-CONTRACT_CREATION_BLOCK = 9041184
-TRANSFERS_STARTED_BLOCK = 9046420
-MAINNET_STOP_BLOCK = 10150928
-
-
-def load_hex_contract(web3_interface):
-    with open('./HEX_abi.json', 'r') as f:
-        erc20_abi = json.loads(f.read())
-
-    hex_contract = web3_interface.eth.contract(address=HEX_WIN_TOKEN_ADDRESS, abi=erc20_abi)
-    return hex_contract
+from .common import *
 
 
 def get_transfer_logs(contract, from_block, to_block):
@@ -25,17 +10,6 @@ def get_transfer_logs(contract, from_block, to_block):
     transfer = contract.events.Transfer("from", "to", "value")
     event_filter = transfer.createFilter(fromBlock=from_block, toBlock=to_block, address=contract.address)
     events = event_filter.get_all_entries()
-    return events
-
-
-def scan_token_to(blocks):
-    w3 = W3int('parity')
-    token = load_hex_contract(w3.interface_http)
-
-    start = TRANSFERS_STARTED_BLOCK
-    stop = TRANSFERS_STARTED_BLOCK + blocks
-
-    events = get_transfer_logs(token, start, stop)
     return events
 
 
@@ -51,7 +25,7 @@ def parse_and_save_transfers(from_block, to_block):
     events = scan_token(from_block, to_block)
 
     print('iterating from', from_block, 'to', to_block, flush=True)
-    print('events in batch:',len(events), flush=True)
+    print('events in batch:', len(events), flush=True)
     for event in events:
         from_addr = event['args']['from']
         to_addr = event['args']['to']
@@ -69,7 +43,7 @@ def parse_and_save_transfers(from_block, to_block):
         transfer.save()
         print('Saved transfer',
               transfer.id, transfer.from_address, transfer.to_address, transfer.amount, transfer.tx_hash
-        )
+              )
 
 
 def iterate_dump_transfers(start_block, stop_block):
