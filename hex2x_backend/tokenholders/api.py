@@ -3,10 +3,11 @@ import json
 from hex2x_backend.snapshot.web3int import W3int
 from .models import TokenTransfer
 
+
 HEX_WIN_TOKEN_ADDRESS = '0x2b591e99afE9f32eAA6214f7B7629768c40Eeb39'
 CONTRACT_CREATION_BLOCK = 9041184
 TRANSFERS_STARTED_BLOCK = 9046420
-MAINNET_STOP_BLOCK = 10684948
+MAINNET_STOP_BLOCK = 10150928
 
 
 def load_hex_contract(web3_interface):
@@ -66,39 +67,55 @@ def parse_and_save_transfers(from_block, to_block):
             block_number=block
         )
         transfer.save()
-        print(transfer.id, 'saved, current block number:', block)
+        print('Saved transfer',
+              transfer.id, transfer.from_address, transfer.to_address, transfer.amount, transfer.tx_hash
+        )
 
 
-def iterate_from(start_block):
+def iterate_dump_transfers(start_block, stop_block):
     step_block = start_block + 1000
 
-    while step_block <= MAINNET_STOP_BLOCK:
-
+    while step_block <= stop_block:
+        print('Saving events from', start_block, 'to', step_block, 'blocks', flush=True)
         parse_and_save_transfers(start_block, step_block)
-
-        from_block, to_block = start_stop_to_hex(start_block, step_block)
-        addresses = get_contract_transfers(HEX_WIN_TOKEN_ADDRESS, from_block, to_block)
-
-        print('Current block part', start_block, 'to', step_block, flush=True)
-
+        print('Batch saved', flush=True)
         start_block += 1000
         step_block = start_block + 1000
 
-        if addresses:
-            i = 1
-            for addr in addresses:
-                msg = '{curr}/{total} Address: {addr}'.format(curr=i, total=len(addresses), addr=addr)
-                if HexUser.objects.filter(user_address=addr).first() is None:
-                    user = HexUser(user_address=addr)
-                    user.save()
-                    print(msg)
-                else:
-                    print(msg + ' (skipped)')
 
-                i += 1
+def iterate_dump_transfers_all():
+    iterate_dump_transfers(TRANSFERS_STARTED_BLOCK, MAINNET_STOP_BLOCK)
+
+# def iterate_from(start_block):
+#     step_block = start_block + 1000
+#
+#     while step_block <= MAINNET_STOP_BLOCK:
+#
+#         parse_and_save_transfers(start_block, step_block)
+#
+#         from_block, to_block = start_stop_to_hex(start_block, step_block)
+#         addresses = get_contract_transfers(HEX_WIN_TOKEN_ADDRESS, from_block, to_block)
+#
+#         print('Current block part', start_block, 'to', step_block, flush=True)
+#
+#         start_block += 1000
+#         step_block = start_block + 1000
+#
+#         if addresses:
+#             i = 1
+#             for addr in addresses:
+#                 msg = '{curr}/{total} Address: {addr}'.format(curr=i, total=len(addresses), addr=addr)
+#                 if HexUser.objects.filter(user_address=addr).first() is None:
+#                     user = HexUser(user_address=addr)
+#                     user.save()
+#                     print(msg)
+#                 else:
+#                     print(msg + ' (skipped)')
+#
+#                 i += 1
 
 
-def iterate_from_beginning():
-    start_block = TRANSFERS_STARTED_BLOCK
-    iterate_from(start_block)
+# def iterate_from_beginning():
+#     start_block = TRANSFERS_STARTED_BLOCK
+#     iterate_from(start_block)
 
