@@ -28,11 +28,45 @@ def scan_stakes(event_type, from_block, to_block):
 
 
 def parse_stake_start(event):
-    return
+    started_stake = {
+        'address': event['args']['stakerAddr'],
+        'stake_id': event['args']['stakeId'],
+        'tx_hash': event['transactionHash'],
+        'block': event['blockNumber']
+    }
+
+    data0 = event['args']['data0']
+    hex_data = hex(data0)
+
+    # normalize hex to full string
+    extended_data = '0x' + hex_data[2:].zfill(64)
+
+    bit_start_time = 40 // 4
+    bit_start_hearts = 112 // 4
+    bit_start_shares = 184 // 4
+    bit_start_days = 200 // 4
+
+    started_stake['data0'] = extended_data
+    started_stake['from_bits'] = {
+        'timestamp': int(extended_data[-bit_start_time:], 16),
+        'hearts': int(extended_data[-bit_start_hearts:-bit_start_time], 16),
+        'shares': int(extended_data[-bit_start_shares:-bit_start_hearts], 16),
+        'days': int(extended_data[-bit_start_days:-bit_start_shares], 16),
+        'is_autostake': True if int(extended_data[:-bit_start_days], 16) != 0 else False
+    }
+
+    return started_stake
 
 
 def parse_stake_end(event):
-    return
+    ended_stake = {
+        'address': event['args']['stakerAddr'],
+        'stake_id': event['args']['stakeId'],
+        'tx_hash': event['transactionHash'],
+        'block': event['blockNumber']
+    }
+
+    return ended_stake
 
 
 def parse_and_save_stakes(event_type, from_block, to_block):
@@ -45,7 +79,26 @@ def parse_and_save_stakes(event_type, from_block, to_block):
         if event_type == 'stake_start':
             parsed_event = parse_stake_start(event)
 
-            started_stake = TokenStakeStart()
+            started_stake = TokenStakeStart(
+                address=parsed_event['address'],
+                stake_id=parsed_event['stake_id'],
+                data0=parsed_event['data0'],
+                timestamp=parsed_event['from_bits']['timestamp'],
+                hearts=parsed_event['from_bits']['hearts'],
+                shares=parsed_event['from_bits']['shares'],
+                days=parsed_event['from_bits']['days'],
+                is_autostake=parsed_event['from_bits']['is_autostake'],
+                tx_hash=parsed_event['tx_hash'],
+                block_number=parsed_event['block']
+            )
+
+            # started_stake.save()
+
+            print('Saved started stake',
+                  started_stake.id, started_stake.address, started_stake.stake_id, started_stake.data0,
+                  started_stake.timestamp, started_stake.hearts, started_stake.shares, started_stake.days,
+                  started_stake.is_autostake, started_stake.tx_hash
+                  )
 
         elif event_type == 'stake_end':
             parsed_event = parse_stake_end(event)
