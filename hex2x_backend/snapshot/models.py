@@ -1,5 +1,6 @@
 from django.db import models
 
+from hex2x_backend.tokenholders.models import TokenStakeStart
 # Create your models here.
 
 
@@ -10,3 +11,5 @@ class HexUser(models.Model):
     hash_signature = models.CharField(max_length=256, null=True, default=None)
 
 
+class OpenedStake(TokenStakeStart):
+    pass

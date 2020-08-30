@@ -1,4 +1,5 @@
-from .models import HexUser
+from hex2x_backend.tokenholders.models import TokenStakeStart, TokenStakeEnd
+from .models import HexUser, OpenedStake
 from holder_parsing import get_hex_balance_for_address, get_hex_balance_for_multiple_address
 from .signing import get_user_signature
 from .web3int import W3int
@@ -49,3 +50,33 @@ def generate_and_save_signature(hex_user, network='mainnet'):
     hex_user.hash_signature = sign_info['signature']
     hex_user.save()
     print('user:', hex_user.user_address, 'hash:', hex_user.user_hash, 'signature:', hex_user.hash_signature)
+
+
+def make_opened_stake_snapshot():
+    started_stakes = TokenStakeStart.objects.all()
+
+    for stake in started_stakes:
+        ended_stake = TokenStakeEnd.objects.filter(stake_id=stake.id)
+        if len(ended_stake) == 1:
+            opened_stake = OpenedStake(
+                address=stake.address,
+                stake_id=stake.stake_id,
+                data0=stake.data0,
+                timestamp=stake.timestamp,
+                hearts=stake.hearts,
+                shares=stake.shares,
+                days=stake.days,
+                is_autostake=stake.is_autostake,
+                tx_hash=stake.tx_hash,
+                block_number=stake.block_number
+            )
+
+            opened_stake.save()
+
+            print('Saved started stake',
+                  opened_stake.id, opened_stake.address, opened_stake.stake_id, opened_stake.data0,
+                  opened_stake.timestamp, opened_stake.hearts, opened_stake.shares, opened_stake.days,
+                  opened_stake.is_autostake, opened_stake.tx_hash
+                  )
+        else:
+            print('multiple results found for', stake.id, 'skipping')
