@@ -90,7 +90,7 @@ def parse_stake_end(event):
     }
 
     ended_stake['from_bits_1'] = {
-        'penalty': int(extended_data_1[-bit_start_penalty], 16),
+        'penalty': int(extended_data_1[-bit_start_penalty:], 16),
         'served_days': int(extended_data_1[-bit_start_days:-bit_start_penalty], 16),
         'prev_unlocked': True if int(extended_data_1[:-bit_start_days], 16) != 0 else False
     }
@@ -148,7 +148,7 @@ def parse_and_save_stakes(event_type, from_block, to_block):
                 block_number=parsed_event['block']
             )
 
-            # ended_stake.save()
+            ended_stake.save()
 
             print('Saved ended stake',
                   ended_stake.id, ended_stake.address, ended_stake.stake_id, ended_stake.data0, ended_stake.data1,
