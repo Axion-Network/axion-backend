@@ -56,7 +56,7 @@ def make_opened_stake_snapshot():
     started_stakes = TokenStakeStart.objects.all()
 
     for stake in started_stakes:
-        ended_stake = TokenStakeEnd.objects.filter(stake_id=stake.id)
+        ended_stake = TokenStakeEnd.objects.filter(address=stake.address, stake_id=stake.id)
         if len(ended_stake) == 1:
             opened_stake = OpenedStake(
                 address=stake.address,
