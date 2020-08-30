@@ -63,7 +63,7 @@ def parse_and_save_transfers(from_block, to_block):
             from_address=from_addr,
             to_address=to_addr,
             amount=amount,
-            tx_hash=tx_hash,
+            tx_hash=tx_hash.hex(),
             block_number=block
         )
         transfer.save()
