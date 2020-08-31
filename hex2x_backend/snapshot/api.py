@@ -165,6 +165,8 @@ def make_full_hex_user_snapshot():
             print(str(datetime.now()), 'address', user.address, 'skipped because amount is zero', flush=True)
             continue
 
+        total_balance = total_balance * 10 ** 10
+
         sign_info = get_user_signature('mainnet', user.address, int(total_balance))
         hash = sign_info['msg_hash'].hex()
         signature = sign_info['signature']
