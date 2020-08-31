@@ -7,6 +7,7 @@ class TokenTransfer(models.Model):
     amount = models.DecimalField(max_digits=len(str(2**256)), decimal_places=0, null=True, default=None)
     tx_hash = models.CharField(max_length=512, null=True, default=None)
     block_number = models.IntegerField(null=True, default=None)
+    parsed = models.BooleanField(default=False)
 
 
 class TokenStakeStart(models.Model):
