@@ -129,7 +129,7 @@ def make_balance_snapshot():
 
 
 def make_balance_shares_snapshot():
-    unique_addresses = SnapshotOpenedStake.objects.values('address').distinct()
+    unique_addresses = [addr['address'] for addr in SnapshotOpenedStake.objects.values('address').distinct()]
 
     print('Shares snapshot started', str(datetime.now()), flush=True)
     for address in unique_addresses:
