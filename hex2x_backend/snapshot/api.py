@@ -133,7 +133,7 @@ def make_balance_shares_snapshot():
 
     print('Shares snapshot started', str(datetime.now()), flush=True)
     for address in unique_addresses:
-        snapshot_address, created - SnapshotAddressSharesBalance.objects.get_or_create(address=address)
+        snapshot_address, created = SnapshotAddressSharesBalance.objects.get_or_create(address=address)
         if created:
             snapshot_address.save()
 
