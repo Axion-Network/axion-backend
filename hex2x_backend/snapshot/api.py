@@ -89,12 +89,14 @@ def make_opened_stake_snapshot():
 def make_balance_snapshot():
     all_transfers = TokenTransfer.objects.all().order_by('id')
 
+    print('Balance snapshot started', flush=True)
+    print(str(datetime.now()), flush=True)
     for transfer in all_transfers:
         if transfer.parsed:
-            print('skipping transfer', transfer.id, 'because already parsed')
+            print('skipping transfer', transfer.id, 'because already parsed', flush=True)
             continue
         if transfer.from_address == transfer.to_address:
-            print('skipping transfer', transfer.id, 'because from and to addresses matched')
+            print('skipping transfer', transfer.id, 'because from and to addresses matched', flush=True)
             continue
 
         if transfer.from_address != ETHEREUM_ZERO_ADDRESS:
@@ -102,7 +104,8 @@ def make_balance_snapshot():
             snapshot_address_1.balance -= transfer.amount
             snapshot_address_1.save()
             print('Block', transfer.block_number, 'transfer', transfer.id,
-                  'address_1', snapshot_address_1.address, 'updated, balance:', snapshot_address_1.balance
+                  'address_1', snapshot_address_1.address, 'updated, balance:', snapshot_address_1.balance,
+                  flush=True
                   )
 
         if transfer.to_address not in [ETHEREUM_ZERO_ADDRESS, HEX_WIN_TOKEN_ADDRESS]:
@@ -110,11 +113,13 @@ def make_balance_snapshot():
             snapshot_address_2.balance += transfer.amount
             snapshot_address_2.save()
             print('Block', transfer.block_number, 'transfer', transfer.id,
-                  'address_2', snapshot_address_2.address, 'updated, balance:', snapshot_address_2.balance
+                  'address_2', snapshot_address_2.address, 'updated, balance:', snapshot_address_2.balance,
+                  flush=True
                   )
 
         transfer.parsed = True
         transfer.save()
 
     print('Balance snapshot done', flush=True)
+    print(str(datetime.now()), flush=True)
     return
