@@ -9,6 +9,7 @@ class HexUser(models.Model):
     hex_amount = models.DecimalField(max_digits=len(str(2**256)), decimal_places=0, default=0)
     user_hash = models.CharField(max_length=256, null=True, default=None)
     hash_signature = models.CharField(max_length=256, null=True, default=None)
+    blockchain_saved = models.BooleanField(default=False)
 
 
 class SnapshotOpenedStake(models.Model):
