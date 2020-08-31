@@ -156,10 +156,14 @@ def make_full_hex_user_snapshot():
     print('Full hex user snapshot started', str(datetime.now()), flush=True)
 
     for user in SnapshotAddressHexBalance.objects.all():
-        hex_balance = user.balance
+        hex_balance = user.balance if user.balance > 0 else 0
         shares_snapshot = SnapshotAddressSharesBalance.objects.filter(address=user.address)
         share_amount = shares_snapshot.first().balance if shares_snapshot else 0
         total_balance = hex_balance + share_amount
+
+        if total_balance == 0:
+            print(str(datetime.now()), 'address', user.address, 'skipped because amount is zero', flush=True)
+            continue
 
         sign_info = get_user_signature('mainnet', user.address, int(total_balance))
         hash = sign_info['msg_hash'].hex()
