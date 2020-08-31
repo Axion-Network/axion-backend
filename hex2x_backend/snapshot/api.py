@@ -93,17 +93,18 @@ def make_balance_snapshot():
     print(str(datetime.now()), flush=True)
     for transfer in all_transfers:
         if transfer.parsed:
-            print('skipping transfer', transfer.id, 'because already parsed', flush=True)
+            print(str(datetime.now()), 'skipping transfer', transfer.id, 'because already parsed', flush=True)
             continue
         if transfer.from_address == transfer.to_address:
-            print('skipping transfer', transfer.id, 'because from and to addresses matched', flush=True)
+            print(str(datetime.now()), 'skipping transfer', transfer.id, 'because from and to addresses matched',
+                  flush=True)
             continue
 
         if transfer.from_address != ETHEREUM_ZERO_ADDRESS:
             snapshot_address_1, created = SnapshotAddressHexBalance.objects.get_or_create(address=transfer.from_address)
             snapshot_address_1.balance -= transfer.amount
             snapshot_address_1.save()
-            print('Block', transfer.block_number, 'transfer', transfer.id,
+            print(str(datetime.now()), 'Block', transfer.block_number, 'transfer', transfer.id,
                   'address_1', snapshot_address_1.address, 'updated, balance:', snapshot_address_1.balance,
                   flush=True
                   )
@@ -112,7 +113,7 @@ def make_balance_snapshot():
             snapshot_address_2, created = SnapshotAddressHexBalance.objects.get_or_create(address=transfer.to_address)
             snapshot_address_2.balance += transfer.amount
             snapshot_address_2.save()
-            print('Block', transfer.block_number, 'transfer', transfer.id,
+            print(str(datetime.now()), 'Block', transfer.block_number, 'transfer', transfer.id,
                   'address_2', snapshot_address_2.address, 'updated, balance:', snapshot_address_2.balance,
                   flush=True
                   )
