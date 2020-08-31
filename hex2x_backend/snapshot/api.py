@@ -150,3 +150,34 @@ def make_balance_shares_snapshot():
               flush=True)
 
     print('Shares snapshot ended', str(datetime.now()), flush=True)
+
+
+def make_full_hex_user_snapshot():
+    print('Full hex user snapshot started', str(datetime.now()), flush=True)
+
+    for user in SnapshotAddressHexBalance.objects.all():
+        hex_balance = user.balance
+        shares_snapshot = SnapshotAddressSharesBalance.objects.filter(address=user.address)
+        share_amount = shares_snapshot.first().balance if shares_snapshot else 0
+        total_balance = hex_balance + share_amount
+
+        sign_info = get_user_signature('mainnet', user.address, int(total_balance))
+        hash = sign_info['msg_hash'].hex()
+        signature = sign_info['signature']
+
+        hex_user = HexUser(
+            user_address=user.address,
+            hex_amount=total_balance,
+            user_hash=hash,
+            hash_signature=signature
+        )
+
+        hex_user.save()
+
+        print(str(datetime.now()),
+              'id', hex_user.id, 'address', hex_user.user_address, 'amount', hex_user.hex_amount,
+              'hash', hex_user.user_hash, 'signature', hex_user.hash_signature, flush=True
+              )
+
+    print('Full hex user snapshot completed', str(datetime.now()), flush=True)
+

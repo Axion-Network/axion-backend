@@ -6,7 +6,7 @@ from hex2x_backend.tokenholders.models import TokenStakeStart
 
 class HexUser(models.Model):
     user_address = models.CharField(max_length=100)
-    hex_amount = models.DecimalField(max_digits=len(str(2**256)), decimal_places=0, null=True, default=None)
+    hex_amount = models.DecimalField(max_digits=len(str(2**256)), decimal_places=0, default=0)
     user_hash = models.CharField(max_length=256, null=True, default=None)
     hash_signature = models.CharField(max_length=256, null=True, default=None)
 
