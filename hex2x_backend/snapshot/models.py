@@ -22,9 +22,15 @@ class SnapshotOpenedStake(models.Model):
     is_autostake = models.BooleanField(default=False)
     tx_hash = models.CharField(max_length=512, null=True, default=None)
     block_number = models.IntegerField(null=True, default=None)
+    parsed = models.BooleanField(default=False)
 
 
 class SnapshotAddressHexBalance(models.Model):
+    address = models.CharField(max_length=512)
+    balance = models.DecimalField(max_digits=len(str(2**256)), decimal_places=0, default=0)
+
+
+class SnapshotAddressSharesBalance(models.Model):
     address = models.CharField(max_length=512)
     balance = models.DecimalField(max_digits=len(str(2**256)), decimal_places=0, default=0)
 

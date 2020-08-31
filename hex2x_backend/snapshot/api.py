@@ -2,7 +2,7 @@ from datetime import datetime
 
 from hex2x_backend.tokenholders.models import TokenStakeStart, TokenStakeEnd, TokenTransfer
 from hex2x_backend.tokenholders.common import HEX_WIN_TOKEN_ADDRESS
-from .models import HexUser, SnapshotOpenedStake, SnapshotAddressHexBalance
+from .models import HexUser, SnapshotOpenedStake, SnapshotAddressHexBalance, SnapshotAddressSharesBalance
 from holder_parsing import get_hex_balance_for_address, get_hex_balance_for_multiple_address
 from .signing import get_user_signature
 from .web3int import W3int
@@ -126,3 +126,27 @@ def make_balance_snapshot():
     print('Balance snapshot done', flush=True)
     print(str(datetime.now()), flush=True)
     return
+
+
+def make_balance_shares_snapshot():
+    unique_addresses = SnapshotOpenedStake.objects.values('address').distinct()
+
+    print('Shares snapshot started', str(datetime.now()), flush=True)
+    for address in unique_addresses:
+        snapshot_address, created - SnapshotAddressSharesBalance.objects.get_or_create(address=address)
+        if created:
+            snapshot_address.save()
+
+        stakes_for_address = SnapshotOpenedStake.objects.filter(address=address)
+
+        for stake in stakes_for_address:
+            if not stake.parsed:
+                snapshot_address.balance += stake.shares
+                stake.parsed = True
+
+        snapshot_address.save()
+        print(str(datetime.now()),
+              'address', address, 'stakes len', len(stakes_for_address), 'shares amount', snapshot_address.balance,
+              flush=True)
+
+    print('Shares snapshot ended', str(datetime.now()), flush=True)
