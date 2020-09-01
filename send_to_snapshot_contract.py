@@ -8,7 +8,7 @@ django.setup()
 from hex2x_backend.snapshot.contracts_interaction import send_to_snapshot_all
 
 if __name__ == '__main__':
-    portion = 350
+    portion = 200
     gas_price = 30
     sleep_time = 15
 
