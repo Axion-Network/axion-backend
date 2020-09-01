@@ -82,7 +82,7 @@ def send_to_snapshot_batch(w3, snapshot_contract, count_start, count_end, gas_pr
         print('skipped because already saved', flush=True)
 
 
-def send_to_snapshot_portions(start, stop, portion, gas_price):
+def send_to_snapshot_portions(start, stop, portion, gas_price, sleep_time):
     load_contracts_dotenv()
     step_part = start + portion
 
@@ -96,7 +96,7 @@ def send_to_snapshot_portions(start, stop, portion, gas_price):
 
         try:
             send_to_snapshot_batch(w3, contract, start, step_part, gas_price)
-            time.sleep(15)
+            time.sleep(sleep_time)
             sender_balance = w3.interface.eth.getBalance(SNAPSHOT_CONTRACT_SENDER_ADDR)
         except Exception as e:
             print('cannot send batch', start, stop)
@@ -106,11 +106,11 @@ def send_to_snapshot_portions(start, stop, portion, gas_price):
         step_part = start + portion
 
 
-def send_to_snapshot_all(portion, gas_price):
+def send_to_snapshot_all(portion, gas_price, sleep_time):
     first_id = HexUser.objects.first().id
     last_id = HexUser.objects.last().id
 
-    send_to_snapshot_portions(first_id, last_id, portion, gas_price)
+    send_to_snapshot_portions(first_id, last_id, portion, gas_price, sleep_time)
 
 
 def init_foreign_swap_contract(network='rinkeby'):
