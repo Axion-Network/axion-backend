@@ -9,7 +9,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from eth_abi import encode_single
 
-from hex2x_backend.settings import BASE_DIR, SNAPSHOT_SIGNING_ADDR
+from hex2x_backend.settings import BASE_DIR, SNAPSHOT_SIGNING_ADDR, BACKEND_ADDR
 
 
 def load_contracts_dotenv():
@@ -52,42 +52,47 @@ def send_to_snapshot_batch(w3, snapshot_contract, count_start, count_end):
     gas_limit = w3.interface.eth.getBlock('latest')['gasLimit']
     chain_id = w3.interface.eth.chainId
 
-    user_list = HexUser.objects.filter(id__in=list(range(count_start, count_end)))
-    address_list = []
-    amount_list = []
-    for user in user_list:
-        address_list.append(w3.interface.toChecksumAddress(user.user_address.lower()))
-        amount_list.append(int(user.hex_amount))
+    user_list = HexUser.objects.filter(id__in=list(range(count_start, count_end)), blockchain_saved=False)
 
-    print(address_list, flush=True)
-    print(amount_list, flush=True)
-    tx = snapshot_contract.functions.addToSnapshotMultiple(address_list, amount_list)
+    if user_list:
+        address_list = []
+        amount_list = []
+        for user in user_list:
+            address_list.append(w3.interface.toChecksumAddress(user.user_address.lower()))
+            amount_list.append(int(user.hex_amount))
 
-    # tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx)
-    #
-    # for user in user_list:
-    #     user.blockchain_saved = True
-    #     user.save()
-    tx_hash = None
+        print(address_list, flush=True)
+        print(amount_list, flush=True)
+        tx = snapshot_contract.functions.addToSnapshotMultiple(address_list, amount_list)
 
-    return tx_hash
+        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx)
+        print('tx_hash', tx_hash.hex(), flush=True)
+
+        for user in user_list:
+            user.blockchain_saved = True
+            user.save()
+
+        return tx_hash
+    else:
+        print('skipped because already saved', flush=True)
 
 
 def send_to_snapshot_portions(start, stop):
-    step_part = start + 400
+    step_part = start + 350
 
     snapshot_contract_address = os.getenv('SNAPSHOT_CONTRACT_ADDRESS')
 
     w3, contract = load_snapshot_contract(snapshot_contract_address)
-    while step_part <= stop:
-        print(str(datetime.now()), flush=True)
-        print('Current part', start, 'to', step_part, flush=True)
+    sender_balance = w3.interface.eth.getBalance(BACKEND_ADDR)
+    while step_part <= stop and sender_balance > 10 ** 18:
+        print(str(datetime.now()), 'Current part', start, 'to', step_part, flush=True)
 
-        start += 400
-        step_part = start + 400
+        start += 350
+        step_part = start + 350
 
         try:
             send_to_snapshot_batch(w3, contract, start, step_part)
+            sender_balance = w3.interface.eth.getBalance(BACKEND_ADDR)
         except Exception as e:
             print('cannot send batch', start, stop)
             print(e)
