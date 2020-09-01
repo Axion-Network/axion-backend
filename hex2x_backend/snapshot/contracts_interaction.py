@@ -88,7 +88,7 @@ def send_to_snapshot_portions(start, stop):
     snapshot_contract_address = os.getenv('SNAPSHOT_CONTRACT_ADDRESS')
 
     w3, contract = load_snapshot_contract(snapshot_contract_address)
-    sender_balance = w3.interface.eth.getBalance(BACKEND_ADDR)
+    sender_balance = w3.interface.eth.getBalance(SNAPSHOT_CONTRACT_SENDER_ADDR)
     while step_part <= stop and sender_balance > 10 ** 18:
         print(str(datetime.now()), 'Current part', start, 'to', step_part, 'account balance', sender_balance / 10 ** 18,
               flush=True)
