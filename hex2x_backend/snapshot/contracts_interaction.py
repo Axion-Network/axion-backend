@@ -50,7 +50,7 @@ def send_to_snapshot(w3, snapshot_contract, hex_user):
     return tx_hash
 
 
-def send_to_snapshot_batch(w3, snapshot_contract, count_start, count_end):
+def send_to_snapshot_batch(w3, snapshot_contract, count_start, count_end, gas_price):
     gas_limit = w3.interface.eth.getBlock('latest')['gasLimit']
     chain_id = w3.interface.eth.chainId
 
@@ -68,7 +68,7 @@ def send_to_snapshot_batch(w3, snapshot_contract, count_start, count_end):
         tx = snapshot_contract.functions.addToSnapshotMultiple(address_list, amount_list)
 
         tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx,
-                               SNAPSHOT_CONTRACT_SENDER_ADDR, SNAPSHOT_CONTRACT_SENDER_PRIV, '10',
+                               SNAPSHOT_CONTRACT_SENDER_ADDR, SNAPSHOT_CONTRACT_SENDER_PRIV, str(gas_price),
                                )
 
         print('tx_hash', tx_hash.hex(), flush=True)
@@ -82,7 +82,7 @@ def send_to_snapshot_batch(w3, snapshot_contract, count_start, count_end):
         print('skipped because already saved', flush=True)
 
 
-def send_to_snapshot_portions(start, stop, portion):
+def send_to_snapshot_portions(start, stop, portion, gas_price):
     load_contracts_dotenv()
     step_part = start + portion
 
@@ -95,7 +95,7 @@ def send_to_snapshot_portions(start, stop, portion):
               flush=True)
 
         try:
-            send_to_snapshot_batch(w3, contract, start, step_part)
+            send_to_snapshot_batch(w3, contract, start, step_part, gas_price)
             time.sleep(15)
             sender_balance = w3.interface.eth.getBalance(SNAPSHOT_CONTRACT_SENDER_ADDR)
         except Exception as e:
@@ -106,12 +106,11 @@ def send_to_snapshot_portions(start, stop, portion):
         step_part = start + portion
 
 
-def send_to_snapshot_all():
+def send_to_snapshot_all(portion, gas_price):
     first_id = HexUser.objects.first().id
     last_id = HexUser.objects.last().id
-    portion = 250
 
-    send_to_snapshot_portions(first_id, last_id, portion)
+    send_to_snapshot_portions(first_id, last_id, portion, gas_price)
 
 
 def init_foreign_swap_contract(network='rinkeby'):
