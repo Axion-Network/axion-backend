@@ -63,8 +63,8 @@ def send_to_snapshot_batch(w3, snapshot_contract, count_start, count_end):
             address_list.append(w3.interface.toChecksumAddress(user.user_address.lower()))
             amount_list.append(int(user.hex_amount))
 
-        print(address_list, flush=True)
-        print(amount_list, flush=True)
+        # print(address_list, flush=True)
+        # print(amount_list, flush=True)
         tx = snapshot_contract.functions.addToSnapshotMultiple(address_list, amount_list)
 
         tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, snapshot_contract.address, tx,
