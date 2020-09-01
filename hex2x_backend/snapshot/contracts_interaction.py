@@ -67,7 +67,7 @@ def send_to_snapshot_batch(w3, snapshot_contract, count_start, count_end):
         tx = snapshot_contract.functions.addToSnapshotMultiple(address_list, amount_list)
 
         tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx,
-                               SNAPSHOT_CONTRACT_SENDER_ADDR, SNAPSHOT_CONTRACT_SENDER_PRIV
+                               SNAPSHOT_CONTRACT_SENDER_ADDR, SNAPSHOT_CONTRACT_SENDER_PRIV, '10'
                                )
 
         print('tx_hash', tx_hash.hex(), flush=True)
