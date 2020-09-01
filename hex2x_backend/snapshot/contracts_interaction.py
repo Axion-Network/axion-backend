@@ -66,8 +66,8 @@ def send_to_snapshot_batch(w3, snapshot_contract, count_start, count_end):
         print(amount_list, flush=True)
         tx = snapshot_contract.functions.addToSnapshotMultiple(address_list, amount_list)
 
-        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx,
-                               SNAPSHOT_CONTRACT_SENDER_ADDR, SNAPSHOT_CONTRACT_SENDER_PRIV, '10'
+        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, snapshot_contract.address, tx,
+                               SNAPSHOT_CONTRACT_SENDER_ADDR, SNAPSHOT_CONTRACT_SENDER_PRIV, '10',
                                )
 
         print('tx_hash', tx_hash.hex(), flush=True)
@@ -167,7 +167,7 @@ def init_foreign_swap_contract(network='rinkeby'):
         )
         print('tx', tx.__dict__, flush=True)
 
-        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx)
+        tx_hash = sign_send_tx(w3.interface, chain_id, contract.address, gas_limit, tx)
         return tx_hash
 
     except Exception as e:
