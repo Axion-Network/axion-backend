@@ -96,7 +96,7 @@ def send_to_snapshot_portions(start, stop, portion):
 
         try:
             send_to_snapshot_batch(w3, contract, start, step_part)
-            time.sleep(10)
+            time.sleep(15)
             sender_balance = w3.interface.eth.getBalance(SNAPSHOT_CONTRACT_SENDER_ADDR)
         except Exception as e:
             print('cannot send batch', start, stop)
@@ -109,7 +109,7 @@ def send_to_snapshot_portions(start, stop, portion):
 def send_to_snapshot_all():
     first_id = HexUser.objects.first().id
     last_id = HexUser.objects.last().id
-    portion = 300
+    portion = 250
 
     send_to_snapshot_portions(first_id, last_id, portion)
 
