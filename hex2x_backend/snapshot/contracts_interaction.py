@@ -9,7 +9,8 @@ from datetime import datetime
 from dotenv import load_dotenv
 from eth_abi import encode_single
 
-from hex2x_backend.settings import BASE_DIR, SNAPSHOT_SIGNING_ADDR, BACKEND_ADDR
+from hex2x_backend.settings import BASE_DIR, SNAPSHOT_SIGNING_ADDR, BACKEND_ADDR, \
+    SNAPSHOT_CONTRACT_SENDER_ADDR, SNAPSHOT_CONTRACT_SENDER_PRIV
 
 
 def load_contracts_dotenv():
@@ -65,7 +66,10 @@ def send_to_snapshot_batch(w3, snapshot_contract, count_start, count_end):
         print(amount_list, flush=True)
         tx = snapshot_contract.functions.addToSnapshotMultiple(address_list, amount_list)
 
-        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx)
+        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx,
+                               SNAPSHOT_CONTRACT_SENDER_ADDR, SNAPSHOT_CONTRACT_SENDER_PRIV
+                               )
+
         print('tx_hash', tx_hash.hex(), flush=True)
 
         for user in user_list:
@@ -85,7 +89,8 @@ def send_to_snapshot_portions(start, stop):
     w3, contract = load_snapshot_contract(snapshot_contract_address)
     sender_balance = w3.interface.eth.getBalance(BACKEND_ADDR)
     while step_part <= stop and sender_balance > 10 ** 18:
-        print(str(datetime.now()), 'Current part', start, 'to', step_part, flush=True)
+        print(str(datetime.now()), 'Current part', start, 'to', step_part, 'account balance', sender_balance / 10 ** 18,
+              flush=True)
 
         start += 350
         step_part = start + 350
@@ -96,6 +101,13 @@ def send_to_snapshot_portions(start, stop):
         except Exception as e:
             print('cannot send batch', start, stop)
             print(e)
+
+
+def send_to_snapshot_all():
+    first_id = HexUser.objects.first().id
+    last_id = HexUser.objects.last().id
+
+    send_to_snapshot_portions(first_id, last_id)
 
 
 def init_foreign_swap_contract(network='rinkeby'):
