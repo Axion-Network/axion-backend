@@ -4,6 +4,7 @@ from .models import HexUser
 
 import os
 import json
+import csv
 import time
 from datetime import datetime
 
@@ -107,10 +108,163 @@ def send_to_snapshot_portions(start, stop, portion, gas_price, sleep_time):
 
 
 def send_to_snapshot_all(portion, gas_price, sleep_time):
-    first_id = HexUser.objects.fliter(blockchain_saved=False).first().id
-    last_id = HexUser.objects.fliter(blockchain_saved=False).last().id
+    first_id = HexUser.objects.filter(blockchain_saved=False).first().id
+    last_id = HexUser.objects.filter(blockchain_saved=False).last().id
 
     send_to_snapshot_portions(first_id, last_id, portion, gas_price, sleep_time)
+
+
+def check_snapshot_contract_amounts():
+    load_contracts_dotenv()
+
+    snapshot_contract_address = os.getenv('SNAPSHOT_CONTRACT_ADDRESS')
+    w3, snapshot_contract = load_snapshot_contract(snapshot_contract_address)
+
+    all_users = HexUser.objects.all().order_by('id')
+    total_users = HexUser.objects.count()
+
+    non_matching_user_ids = []
+    for user in all_users:
+        snapshot_balance = user.hex_amount
+        real_balance = snapshot_contract.functions.balanceOf(user.user_address).call()
+
+        if snapshot_balance == real_balance:
+            user.rechecked = True
+            user.save()
+
+        print(user.id, '/', total_users, 'address', user.user_address, 'have hvalid amount:', user.rechecked, flush=True)
+
+    print('Done',  flush=True)
+
+    with open('non_matched.txt', 'w') as f:
+        f.write(non_matching_user_ids)
+
+
+def check_snapshot_contract_from_csv():
+    load_contracts_dotenv()
+
+    snapshot_contract_address = os.getenv('SNAPSHOT_CONTRACT_ADDRESS')
+    w3, snapshot_contract = load_snapshot_contract(snapshot_contract_address)
+
+    csv_file = open('export-tokenholders-for-contract-0x09088dd603f48d70105850718f1aec8b7aa6f8e2.csv', 'r')
+    csv_dump = csv.reader(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+    csv_addresses = [row for row in csv_dump]
+    csv_addresses.pop(0)
+    csv_addr_list = [w3.interface.toChecksumAddress(csv_addr[0]) for csv_addr in csv_addresses]
+
+    not_in_csv = HexUser.objects.exclude(user_address__in=csv_addr_list)
+
+    count = 0
+    print('Started', flush=True)
+    for user in not_in_csv:
+        snapshot_balance = user.hex_amount
+        real_balance = snapshot_contract.functions.balanceOf(user.user_address).call()
+
+        if snapshot_balance != real_balance:
+            user.blockchain_saved = False
+        else:
+            user.blockchain_saved = True
+
+        user.save()
+        count += 1
+        print(count, '|', user.id, 'matched:', user.blockchain_saved, flush=True)
+
+    print('Done', flush=True)
+
+
+def check_snapshot_contract_from_etherscan():
+    load_contracts_dotenv()
+
+    snapshot_contract_address = os.getenv('SNAPSHOT_CONTRACT_ADDRESS')
+    w3, snapshot_contract = load_snapshot_contract(snapshot_contract_address)
+
+    transferred_users = HexUser.objects.all().order_by('id')
+
+    csv_file = open('export-tokenholders-for-contract-0x09088dd603f48d70105850718f1aec8b7aa6f8e2.csv', 'r')
+
+    csv_dump = csv.reader(csv_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_ALL)
+    csv_addresses = [row for row in csv_dump]
+    csv_addresses.pop(0)
+    total_users = len(csv_addresses)
+
+    non_matching_user_ids = []
+    non_matching_list = []
+    counter = 0
+    for row in csv_addresses:
+
+        address = row[0]
+        amount = row[1]
+
+        checksum_address = w3.interface.toChecksumAddress(str(address))
+        decimal_amount = w3.interface.toWei(amount, 'ether')
+
+        user = HexUser.objects.get(user_address=checksum_address)
+
+        appended = False
+        if user.hex_amount != decimal_amount:
+            non_matching_user_ids.append(user.id)
+            non_matching_list.append(user)
+            appended = True
+
+        counter += 1
+        print(counter, user.id, '/', total_users, 'not matched:', appended)
+
+    print('Done', len(non_matching_user_ids), 'addresses', flush=True)
+    with open('non_matched.txt', 'w') as f:
+        f.write(str(non_matching_user_ids))
+
+    return non_matching_list
+
+
+def send_to_snapshot_unset(w3, snapshot_contract, user_list, gas_price, sleep_time):
+    gas_limit = w3.interface.eth.getBlock('latest')['gasLimit']
+    chain_id = w3.interface.eth.chainId
+
+    if user_list:
+        address_list = []
+        amount_list = []
+        for user in user_list:
+            address_list.append(w3.interface.toChecksumAddress(user.user_address.lower()))
+            amount_list.append(int(user.hex_amount))
+
+        # print(address_list, flush=True)
+        # print(amount_list, flush=True)
+        tx = snapshot_contract.functions.addToSnapshotMultiple(address_list, amount_list)
+
+        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx,
+                               SNAPSHOT_CONTRACT_SENDER_ADDR, SNAPSHOT_CONTRACT_SENDER_PRIV, str(gas_price),
+                               )
+
+        print('tx_hash', tx_hash.hex(), flush=True)
+
+        for user in user_list:
+            user.blockchain_saved = True
+            user.save()
+
+        time.sleep(sleep_time)
+        return tx_hash
+    else:
+        print('skipped because already saved', flush=True)
+
+
+def send_next_addresses():
+    load_contracts_dotenv()
+
+    snapshot_contract_address = os.getenv('SNAPSHOT_CONTRACT_ADDRESS')
+    w3, snapshot_contract = load_snapshot_contract(snapshot_contract_address)
+    not_sent_addresses = HexUser.objects.filter(blockchain_saved=False).order_by('id')
+    not_sent_addresses_count = not_sent_addresses.count()
+    max_addresses = 300
+
+    while not_sent_addresses_count != 0:
+
+        current_addr_part = not_sent_addresses[:max_addresses]
+        send_to_snapshot_unset(w3, snapshot_contract, current_addr_part, gas_price=30, sleep_time=20)
+
+        not_sent_addresses = HexUser.objects.filter(blockchain_saved=True).order_by('id')
+        not_sent_addresses_count = not_sent_addresses.count()
+
+
 
 
 def init_foreign_swap_contract(network='rinkeby'):
