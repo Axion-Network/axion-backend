@@ -4,6 +4,7 @@ from .models import HexUser
 
 import os
 import json
+import time
 from datetime import datetime
 
 from dotenv import load_dotenv
@@ -97,6 +98,7 @@ def send_to_snapshot_portions(start, stop):
 
         try:
             send_to_snapshot_batch(w3, contract, start, step_part)
+            time.sleep(15)
             sender_balance = w3.interface.eth.getBalance(BACKEND_ADDR)
         except Exception as e:
             print('cannot send batch', start, stop)
