@@ -94,16 +94,16 @@ def send_to_snapshot_portions(start, stop):
         print(str(datetime.now()), 'Current part', start, 'to', step_part, 'account balance', sender_balance / 10 ** 18,
               flush=True)
 
-        start += 350
-        step_part = start + 350
-
         try:
             send_to_snapshot_batch(w3, contract, start, step_part)
             time.sleep(10)
-            sender_balance = w3.interface.eth.getBalance(BACKEND_ADDR)
+            sender_balance = w3.interface.eth.getBalance(SNAPSHOT_CONTRACT_SENDER_ADDR)
         except Exception as e:
             print('cannot send batch', start, stop)
             print(e)
+
+        start += 350
+        step_part = start + 350
 
 
 def send_to_snapshot_all():
