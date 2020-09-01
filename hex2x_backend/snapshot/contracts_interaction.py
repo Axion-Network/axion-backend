@@ -82,9 +82,9 @@ def send_to_snapshot_batch(w3, snapshot_contract, count_start, count_end):
         print('skipped because already saved', flush=True)
 
 
-def send_to_snapshot_portions(start, stop):
+def send_to_snapshot_portions(start, stop, portion):
     load_contracts_dotenv()
-    step_part = start + 350
+    step_part = start + portion
 
     snapshot_contract_address = os.getenv('SNAPSHOT_CONTRACT_ADDRESS')
 
@@ -102,15 +102,16 @@ def send_to_snapshot_portions(start, stop):
             print('cannot send batch', start, stop)
             print(e)
 
-        start += 350
-        step_part = start + 350
+        start += portion
+        step_part = start + portion
 
 
 def send_to_snapshot_all():
     first_id = HexUser.objects.first().id
     last_id = HexUser.objects.last().id
+    portion = 300
 
-    send_to_snapshot_portions(first_id, last_id)
+    send_to_snapshot_portions(first_id, last_id, portion)
 
 
 def init_foreign_swap_contract(network='rinkeby'):
