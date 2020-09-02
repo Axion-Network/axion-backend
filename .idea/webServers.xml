@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="e28391f5-3397-4a0c-a200-eae7b8e4f1ac" name="max@5.9.121.164:22" url="http:///">
+        <fileTransfer host="5.9.121.164" port="22" privateKey="$USER_HOME$/.ssh/id_rsa" accessType="SFTP" keyPair="true">
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="c1170342-06a4-4f4d-b3e8-8e41d36665e0" name="ssd parity" url="http:///">
+        <fileTransfer host="95.217.212.26" port="22" privateKey="$USER_HOME$/.ssh/id_rsa" accessType="SFTP" keyPair="true">
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+      <webServer id="4e0e0bfd-f64c-466a-8f4e-1940f0a27aa3" name="axion deprod" url="http:///">
+        <fileTransfer host="5.9.121.164" port="22" privateKey="$USER_HOME$/.ssh/id_rsa" accessType="SFTP" keyPair="true">
+          <option name="port" value="22" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

@@ -1,39 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="axion_snapshot_devprod max@5.9.121.164:22">
+  <component name="PublishConfigData">
     <serverData>
-      <paths name="axion_snapshot_devprod max@5.9.121.164:22">
+      <paths name="axion deprod">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/pydaemon/axion_backend" local="$PROJECT_DIR$" />
+            <mapping deploy="/home/pydaemon/axion_backend" local="$PROJECT_DIR$" web="/" />
           </mappings>
-        </serverdata>
-      </paths>
-      <paths name="esphome@192.168.88.101:22">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="euphemia@127.0.0.1:2222">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
-        </serverdata>
-      </paths>
-      <paths name="euphemia@192.168.88.214:22">
-        <serverdata>
-          <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
-          </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/hex2x_snapshot/migrations" />
+            <excludedPath local="true" path="$PROJECT_DIR$/venv" />
+          </excludedPaths>
         </serverdata>
       </paths>
       <paths name="max@5.9.121.164:22">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/max/hex2x-backend" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/home/axion/hex2x-backend" local="$PROJECT_DIR$" web="/" />
           </mappings>
           <excludedPaths>
             <excludedPath local="true" path="$PROJECT_DIR$/hex2x_snapshot/migrations" />

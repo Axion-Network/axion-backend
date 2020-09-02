@@ -59,7 +59,7 @@ def check_snapshot_contract_amounts(all_users):
     load_contracts_dotenv()
 
     snapshot_contract_address = os.getenv('SNAPSHOT_CONTRACT_ADDRESS')
-    w3, snapshot_contract = load_snapshot_contract(snapshot_contract_address)
+    w3, snapshot_contract = load_snapshot_contract(snapshot_contract_address, 'ropsten')
 
     total_users = all_users.count()
 
@@ -80,8 +80,10 @@ def check_snapshot_contract_amounts(all_users):
         f.write(non_matching_user_ids)
 
 
-def send_next_addresses(max_addresses, gas_price, retry_seconds, start, stop=HexUser.objects.count()):
-    print('Starting migration', start, '-', stop, 'with page size', max_addresses,
+def send_next_addresses(max_addresses, gas_price, retry_seconds,):
+    addresses = HexUser.objects.filter(snapshot_tx=None).order_by('id')
+    addresses_count = addresses.count()
+    print('Starting migration of ', addresses_count, 'addresses with page size', max_addresses,
           'gas price', gas_price, 'retry wait', retry_seconds, flush=True
           )
     load_contracts_dotenv()
@@ -90,19 +92,24 @@ def send_next_addresses(max_addresses, gas_price, retry_seconds, start, stop=Hex
     w3, snapshot_contract = load_snapshot_contract(snapshot_contract_address, 'ropsten')
     print('snapshot contract address', snapshot_contract.address, flush=True)
 
-    gas_limit = w3.interface.eth.getBlock('latest')['gasLimit']
+    # gas_limit = w3.interface.eth.getBlock('latest')['gasLimit']
+    gas_limit = 7900000
     chain_id = w3.interface.eth.chainId
 
-    addresses = HexUser.objects.filter(id__gte=start, id__lte=stop, snapshot_tx=None).order_by('id')
-    addresses_count = addresses.count()
+    # addresses = HexUser.objects.filter(id__gte=start, id__lte=stop, snapshot_tx=None).order_by('id')
 
     paginator = Paginator(addresses, max_addresses)
+    print('Total pages', paginator.num_pages, flush=True)
 
     page = paginator.page(1)
 
     while page.has_next():
         user_list = page.object_list
 
+        print('users:', len(user_list), flush=True)
+
+        if len(user_list) == 0:
+            return {'reason': 'exited'}
         user_id_start = user_list[0].id
         user_id_end = user_list[len(user_list) - 1].id
 
@@ -110,8 +117,8 @@ def send_next_addresses(max_addresses, gas_price, retry_seconds, start, stop=Hex
             sender_balance = w3.interface.eth.getBalance(SNAPSHOT_CONTRACT_SENDER_ADDR)
             if sender_balance < w3.interface.toWei('1', 'ether'):
                 print('not enough balance', sender_balance, ', stopping', flush=True)
-                return
-            print(str(datetime.now()), 'sending', user_id_start, '/', user_id_end, 'of', addresses_count, flush=True)
+                return {'reason': 'balance'}
+            print(str(datetime.now()), 'sending', user_id_start, '-', user_id_end, 'total :', addresses_count, flush=True)
 
             address_list = []
             amount_list = []
@@ -133,15 +140,26 @@ def send_next_addresses(max_addresses, gas_price, retry_seconds, start, stop=Hex
                 try:
                     tx_receipt = w3.interface.eth.getTransactionReceipt(tx_hash_hex)
                     if tx_receipt:
-                        tx_confirmed = True
-                        print('tx confirmed', flush=True)
-                        break
+                        if tx_receipt['status'] == 1:
+                            tx_confirmed = True
+                            print('tx confirmed', flush=True)
+                            break
+                        elif tx_receipt['status'] == 0:
+                            print('tx reverted', flush=True)
+                            break
+                        else:
+                            print('tx may failed, receipt found without status', flush=True)
+                            break
                 except TransactionNotFound:
-                    time.sleep(10)
+                    time.sleep(1)
                     continue
 
             if not tx_confirmed:
-                raise Exception('transaction not appeared in %s seconds' % retry_seconds)
+                for user in user_list:
+                    user.snapshot_tx = tx_hash_hex
+                    user.tx_possible_fail = True
+                    user.save()
+                raise Exception('transaction failed or not appeared in %s seconds' % retry_seconds)
             # tx_receipt = w3.interface.eth.getTransactionReceipt(tx_hash_hex)
             sender_balance = w3.interface.eth.getBalance(SNAPSHOT_CONTRACT_SENDER_ADDR)
 
@@ -158,13 +176,35 @@ def send_next_addresses(max_addresses, gas_price, retry_seconds, start, stop=Hex
         next_page_number = page.next_page_number()
         page = paginator.page(next_page_number)
 
+    return {'reason': 'finished'}
 
-def get_sent_addresses_oaginator():
+def get_sent_addresses_paginator():
     start = 1
     stop = HexUser.objects.count()
+    max_addresses = 150
+
     addresses = HexUser.objects.filter(id__gte=start, id__lte=stop).order_by('id')
     paginator = Paginator(addresses, max_addresses)
     return paginator
+
+
+def check_failed_txs():
+    failed_addresses = HexUser.objects.filter(tx_possible_fail=True).values('snapshot_tx').distinct()
+    failed_tx_list = [tx['snapshot_tx'] for tx in failed_addresses]
+    w3 = W3int('infura', 'ropsten')
+
+    checked_txs = {}
+    for tx in failed_tx_list:
+        try:
+            receipt = w3.interface.eth.getTransactionReceipt(tx)
+            if receipt['status'] == 1:
+                checked_txs[tx] = receipt
+            else:
+                checked_txs[tx] = None
+        except TransactionNotFound:
+            ckecked_txs[tx] = None
+
+    return checked_txs
 
 
 def init_foreign_swap_contract(network='rinkeby'):

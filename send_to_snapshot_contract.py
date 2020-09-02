@@ -11,9 +11,23 @@ if __name__ == '__main__':
     start = 1
     stop = 2000
 
-    portion = 250
+    portion = 300
 
-    gas_price = 20
-    retry_seconds = 360
+    gas_price = 30
+    retry_seconds = 300
 
-    send_next_addresses(portion, gas_price, retry_seconds, start)
+    while True:
+        res = send_next_addresses(portion, gas_price, retry_seconds)
+        # print(res, flush=True)
+        if res['reason'] == 'balance':
+            print('please replenish balance', flush=True)
+            break
+        elif res['reason'] == 'finished':
+            print('script finished', flush=True)
+            break
+        elif res['reason'] == 'exited':
+            print('starting over', flush=True)
+            continue
+        else:
+            print('script finished', flush=True)
+            break
