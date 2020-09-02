@@ -80,7 +80,6 @@ def check_snapshot_contract_amounts(all_users):
         f.write(non_matching_user_ids)
 
 
-
 def send_next_addresses(max_addresses, gas_price, retry_seconds, start, stop=HexUser.objects.count()):
     print('Starting migration', start, '-', stop, 'with page size', max_addresses,
           'gas price', gas_price, 'retry wait', retry_seconds, flush=True
@@ -160,8 +159,12 @@ def send_next_addresses(max_addresses, gas_price, retry_seconds, start, stop=Hex
         page = paginator.page(next_page_number)
 
 
-
-
+def get_sent_addresses_oaginator():
+    start = 1
+    stop = HexUser.objects.count()
+    addresses = HexUser.objects.filter(id__gte=start, id__lte=stop).order_by('id')
+    paginator = Paginator(addresses, max_addresses)
+    return paginator
 
 
 def init_foreign_swap_contract(network='rinkeby'):
