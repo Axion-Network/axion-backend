@@ -5,11 +5,15 @@ import django
 
 django.setup()
 
-from hex2x_backend.snapshot.contracts_interaction import send_to_snapshot_all
+from hex2x_backend.snapshot.contracts_interaction import send_next_addresses
 
 if __name__ == '__main__':
-    portion = 200
-    gas_price = 30
-    sleep_time = 15
+    start = 1
+    stop = 2000
 
-    send_to_snapshot_all(portion, gas_price, sleep_time)
+    portion = 250
+
+    gas_price = 20
+    retry_seconds = 360
+
+    send_next_addresses(portion, gas_price, retry_seconds, start)

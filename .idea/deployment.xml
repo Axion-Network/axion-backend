@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="max@5.9.121.164:22">
+  <component name="PublishConfigData" serverName="axion_snapshot_devprod max@5.9.121.164:22">
     <serverData>
+      <paths name="axion_snapshot_devprod max@5.9.121.164:22">
+        <serverdata>
+          <mappings>
+            <mapping deploy="/home/pydaemon/axion_backend" local="$PROJECT_DIR$" />
+          </mappings>
+        </serverdata>
+      </paths>
       <paths name="esphome@192.168.88.101:22">
         <serverdata>
           <mappings>
@@ -26,8 +33,12 @@
       <paths name="max@5.9.121.164:22">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/pydaemon/axion_backend" local="$PROJECT_DIR$" />
+            <mapping deploy="/home/max/hex2x-backend" local="$PROJECT_DIR$" web="/" />
           </mappings>
+          <excludedPaths>
+            <excludedPath local="true" path="$PROJECT_DIR$/hex2x_snapshot/migrations" />
+            <excludedPath local="true" path="$PROJECT_DIR$/venv" />
+          </excludedPaths>
         </serverdata>
       </paths>
     </serverData>
