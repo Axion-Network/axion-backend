@@ -9,7 +9,6 @@ from hex2x_backend.snapshot.contracts_interaction import check_snapshot_contract
 from hex2x_backend.snapshot.models import HexUser
 
 if __name__ == '__main__':
-    # pall_users = HexUser.objects.all().order_by('id')
-    start = 65900
-    all_users = HexUser.objects.filter(id__gte=start).order_by('id')
-    check_snapshot_contract_amounts(all_users)
+    all_users = HexUser.objects.filter(tx_checked=False).order_by('id')
+    while all_users.count() > 0:
+        check_snapshot_contract_amounts(all_users)

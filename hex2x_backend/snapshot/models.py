@@ -10,7 +10,7 @@ class HexUser(models.Model):
     user_hash = models.CharField(max_length=256, null=True, default=None)
     hash_signature = models.CharField(max_length=256, null=True, default=None)
     snapshot_tx = models.CharField(max_length=256, null=True, default=None)
-    tx_possible_fail = models.BooleanField(default=False)
+    tx_checked = models.BooleanField(default=False)
 
 
 class SnapshotOpenedStake(models.Model):

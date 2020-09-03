@@ -69,15 +69,17 @@ def check_snapshot_contract_amounts(all_users):
         real_balance = snapshot_contract.functions.balanceOf(user.user_address).call()
 
         if snapshot_balance == real_balance:
-            user.rechecked = True
+            user.tx_possible_fail = True
             user.save()
 
-        print(user.id, '/', total_users, 'address', user.user_address, 'have hvalid amount:', user.rechecked, flush=True)
+        print(user.id, '/', total_users, 'address', user.user_address, 'have valid amount:', user.tx_possible_fail, flush=True)
 
     print('Done',  flush=True)
 
     with open('non_matched.txt', 'w') as f:
-        f.write(non_matching_user_ids)
+        writer = csv.writer(f,  delimiter=',', quoting=csv.QUOTE_MINIMAL)
+        for id in non_matching_user_ids:
+            writer.writerow([id])
 
 
 def send_next_addresses(max_addresses, gas_price, retry_seconds,):

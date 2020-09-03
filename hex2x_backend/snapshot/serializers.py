@@ -6,4 +6,4 @@ from .models import HexUser
 class HexAddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = HexUser
-        exclude = ['id', 'blockchain_saved', 'verified']
+        exclude = ['id', 'snapshot_tx', 'tx_checked']
