@@ -210,6 +210,7 @@ def check_failed_txs():
 
 
 def init_foreign_swap_contract(network='rinkeby'):
+    print('Initializing Foreigm Swap contract', flush=True)
     load_contracts_dotenv()
 
     foreign_swap_address = os.getenv('FOREIGN_SWAP_ADDRESS')
@@ -224,42 +225,19 @@ def init_foreign_swap_contract(network='rinkeby'):
         day_seconds = os.getenv('DAY_SECONDS')
         max_claim_amount = os.getenv('MAX_CLAIM_AMOUNT')
         token_address = os.getenv('TOKEN_ADDRESS')
-        daily_auction_address = os.getenv('DAILY_AUCTION_ADDRESS')
-        weekly_auction_address = os.getenv('WEEKLY_AUCTION_ADDRESS')
-        staking_adrress = os.getenv('STAKING_ADDRESS')
+        auction_address = os.getenv('AUCTION_ADDRESS')
+        staking_address = os.getenv('STAKING_ADDRESS')
         bpd_address = os.getenv('BPD_ADDRESS')
         total_snapshot_amount = os.getenv('TOTAL_SNAPSHOT_AMOUNT')
         total_snapshot_addresses = os.getenv('TOTAL_SNAPSHOT_ADDRESSES')
-
-        # init_signature = '(address,uint256,uint256,address,address,address,address,address,uint256,uint256)'
-        # init_args = [
-        #     signer_address,
-        #     int(day_seconds),
-        #     int(max_claim_amount),
-        #     token_address,
-        #     daily_auction_address,
-        #     weekly_auction_address,
-        #     staking_adrress,
-        #     bpd_address,
-        #     int(total_snapshot_addresses),
-        #     int(total_snapshot_amount)
-        # ]
-        #
-        # encoded_params = encode_single(init_signature, init_args)
-        # #print(encoded_params, flush=True)
-        #
-        # tx_data = contract.encodeABI('init', args=init_args)
-        #
-        # print(tx_data)
 
         tx = contract.functions.init(
             signer_address,
             int(day_seconds),
             int(max_claim_amount),
             token_address,
-            daily_auction_address,
-            weekly_auction_address,
-            staking_adrress,
+            auction_address,
+            staking_address,
             bpd_address,
             int(total_snapshot_amount),
             int(total_snapshot_addresses)
@@ -267,10 +245,85 @@ def init_foreign_swap_contract(network='rinkeby'):
         print('tx', tx.__dict__, flush=True)
 
         tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx)
+        print('Done', tx_hash, flush=True)
         return tx_hash
 
     except Exception as e:
         print('Transaction failed to send, reason:', e)
 
 
+def init_bpd_contract(network='rinkeby'):
+    print('Initializing BPD contract', flush=True)
+    load_contracts_dotenv()
 
+    bpd_address = os.getenv('BPD_ADDRESS')
+
+    w3, contract = load_swap_contract(bpd_address, network)
+
+    gas_limit = w3.interface.eth.getBlock('latest')['gasLimit']
+    chain_id = w3.interface.eth.chainId
+
+    try:
+        token_address = os.getenv('TOKEN_ADDRESS')
+        foreign_swap_address = os.getenv('FOREIGN_SWAP_ADDRESS')
+        subbalance_address = os.getenv('SUBBALANCE_ADDRESS')
+
+        tx = contract.functions.init(
+            token_address,
+            foreign_swap_address,
+            subbalance_address,
+        )
+        print('tx', tx.__dict__, flush=True)
+
+        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx)
+        print('Done', tx_hash, flush=True)
+        return tx_hash
+
+    except Exception as e:
+        print('Transaction failed to send, reason:', e)
+
+
+def init_subbalance_contract(network='rinkeby'):
+    print('Initializing SubBalance contract', flush=True)
+    load_contracts_dotenv()
+
+    bpd_address = os.getenv('SUBBALANCE_ADDRESS')
+
+    w3, contract = load_swap_contract(bpd_address, network)
+
+    gas_limit = w3.interface.eth.getBlock('latest')['gasLimit']
+    chain_id = w3.interface.eth.chainId
+
+    try:
+        token_address = os.getenv('TOKEN_ADDRESS')
+        foreign_swap_address = os.getenv('FOREIGN_SWAP_ADDRESS')
+        bpd_address = os.getenv('BPD_ADDRESS')
+        auction_address = os.getenv('AUCTION_ADDRESS')
+        staking_address = os.getenv('STAKING_ADDRESS')
+        day_seconds = os.getenv('DAY_SECONDS')
+        base_period = os.getenv('BASE_PERIOD')
+
+
+        tx = contract.functions.init(
+            token_address,
+            foreign_swap_address,
+            bpd_address,
+            auction_address,
+            staking_address,
+            int(day_seconds),
+            int(base_period)
+        )
+        print('tx', tx.__dict__, flush=True)
+
+        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx)
+        print('Done', tx_hash, flush=True)
+        return tx_hash
+
+    except Exception as e:
+        print('Transaction failed to send, reason:', e)
+
+
+def init_second_part(network='rinkeby'):
+    init_foreign_swap_contract(network)
+    init_bpd_contract(network)
+    init_subbalance_contract(network)
