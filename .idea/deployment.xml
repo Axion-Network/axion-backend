@@ -2,7 +2,7 @@
 <project version="4">
   <component name="PublishConfigData">
     <serverData>
-      <paths name="axion deprod">
+      <paths name="axion devprod (pydaemon)">
         <serverdata>
           <mappings>
             <mapping deploy="/home/pydaemon/axion_backend" local="$PROJECT_DIR$" web="/" />
@@ -13,10 +13,10 @@
           </excludedPaths>
         </serverdata>
       </paths>
-      <paths name="max@5.9.121.164:22">
+      <paths name="fake back for test (max)">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/axion/hex2x-backend" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/home/max/hex2x-backend" local="$PROJECT_DIR$" web="/" />
           </mappings>
           <excludedPaths>
             <excludedPath local="true" path="$PROJECT_DIR$/hex2x_snapshot/migrations" />

@@ -2,7 +2,7 @@
 <project version="4">
   <component name="WebServers">
     <option name="servers">
-      <webServer id="e28391f5-3397-4a0c-a200-eae7b8e4f1ac" name="max@5.9.121.164:22" url="http:///">
+      <webServer id="e28391f5-3397-4a0c-a200-eae7b8e4f1ac" name="fake back for test (max)" url="http:///">
         <fileTransfer host="5.9.121.164" port="22" privateKey="$USER_HOME$/.ssh/id_rsa" accessType="SFTP" keyPair="true">
           <option name="port" value="22" />
         </fileTransfer>
@@ -12,7 +12,7 @@
           <option name="port" value="22" />
         </fileTransfer>
       </webServer>
-      <webServer id="4e0e0bfd-f64c-466a-8f4e-1940f0a27aa3" name="axion deprod" url="http:///">
+      <webServer id="4e0e0bfd-f64c-466a-8f4e-1940f0a27aa3" name="axion devprod (pydaemon)" url="http:///">
         <fileTransfer host="5.9.121.164" port="22" privateKey="$USER_HOME$/.ssh/id_rsa" accessType="SFTP" keyPair="true">
           <option name="port" value="22" />
         </fileTransfer>

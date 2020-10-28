@@ -4,7 +4,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.exceptions import NotFound, APIException
 from rest_framework.response import Response
 
-from .models import HexUser
+from .models import HexUser, SnapshotUser, SnapshotUserTestnet
 from .serializers import HexAddressSerializer
 
 
@@ -14,7 +14,7 @@ class HexAddressViewSetPagination(LimitOffsetPagination):
 
 
 class HexAddressViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = HexUser.objects.all()
+    queryset = SnapshotUserTestnet.objects.all()
     lookup_field = 'user_address'
 
     serializer_class = HexAddressSerializer

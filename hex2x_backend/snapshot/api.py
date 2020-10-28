@@ -2,13 +2,15 @@ from datetime import datetime
 
 from hex2x_backend.tokenholders.models import TokenStakeStart, TokenStakeEnd, TokenTransfer
 from hex2x_backend.tokenholders.common import HEX_WIN_TOKEN_ADDRESS
-from .models import HexUser, SnapshotOpenedStake, SnapshotAddressHexBalance, SnapshotAddressSharesBalance
+from .models import HexUser, SnapshotOpenedStake, SnapshotAddressHexBalance, SnapshotAddressSharesBalance, \
+    SnapshotStake, SnapshotUser, SnapshotUserTestnet
 from holder_parsing import get_hex_balance_for_address, get_hex_balance_for_multiple_address
 from .signing import get_user_signature
 from .web3int import W3int
 from holder_parsing import load_hex_contract
 
 ETHEREUM_ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+
 
 def regenerate_db_amount_signatures():
     all_users = HexUser.objects.all().order_by('id')
@@ -56,36 +58,40 @@ def generate_and_save_signature(hex_user, network='mainnet'):
     print('user:', hex_user.user_address, 'hash:', hex_user.user_hash, 'signature:', hex_user.hash_signature)
 
 
-def make_opened_stake_snapshot():
+def make_persisted_stake_snapshot():
     started_stakes = TokenStakeStart.objects.all()
 
     for stake in started_stakes:
+
+        snapshot_stake = SnapshotStake(
+            address=stake.address,
+            stake_id=stake.stake_id,
+            data0=stake.data0,
+            timestamp=stake.timestamp,
+            hearts=stake.hearts,
+            shares=stake.shares,
+            days=stake.days,
+            is_autostake=stake.is_autostake,
+            tx_hash=stake.tx_hash,
+            block_number=stake.block_number
+        )
+
         ended_stake = TokenStakeEnd.objects.filter(address=stake.address, stake_id=stake.id)
+
         if len(ended_stake) == 1:
-            opened_stake = SnapshotOpenedStake(
-                address=stake.address,
-                stake_id=stake.stake_id,
-                data0=stake.data0,
-                timestamp=stake.timestamp,
-                hearts=stake.hearts,
-                shares=stake.shares,
-                days=stake.days,
-                is_autostake=stake.is_autostake,
-                tx_hash=stake.tx_hash,
-                block_number=stake.block_number
-            )
-
-            opened_stake.save()
-
-            print('Saved started stake',
-                  opened_stake.id, opened_stake.address, opened_stake.stake_id, opened_stake.data0,
-                  opened_stake.timestamp, opened_stake.hearts, opened_stake.shares, opened_stake.days,
-                  opened_stake.is_autostake, opened_stake.tx_hash
-                  )
+            snapshot_stake.ended = True
         elif len(ended_stake) == 0:
-            continue
+            snapshot_stake.ended = False
         else:
             print('multiple results found for', stake.id, 'skipping')
+
+        snapshot_stake.save()
+
+        print('Saved stake',
+              snapshot_stake.id, snapshot_stake.address, snapshot_stake.stake_id, snapshot_stake.data0,
+              snapshot_stake.timestamp, snapshot_stake.hearts, snapshot_stake.shares, snapshot_stake.days,
+              snapshot_stake.is_autostake, snapshot_stake.ended, snapshot_stake.tx_hash
+              )
 
 
 def make_balance_snapshot():
@@ -129,7 +135,9 @@ def make_balance_snapshot():
 
 
 def make_balance_shares_snapshot():
-    unique_addresses = [addr['address'] for addr in SnapshotOpenedStake.objects.values('address').distinct()]
+    unique_addresses = [addr['address'] for addr in SnapshotStake.objects.values('address').distinct()]
+    unique_addresses_count = len(unique_addresses)
+    count = 0
 
     print('Shares snapshot started', str(datetime.now()), flush=True)
     for address in unique_addresses:
@@ -137,22 +145,29 @@ def make_balance_shares_snapshot():
         if created:
             snapshot_address.save()
 
-        stakes_for_address = SnapshotOpenedStake.objects.filter(address=address)
+        stakes_for_address = SnapshotStake.objects.filter(address=address)
 
-        for stake in stakes_for_address:
-            if not stake.parsed:
-                snapshot_address.balance += stake.shares
-                stake.parsed = True
+        if len(stakes_for_address) > 0:
+            for stake in stakes_for_address:
+                if not stake.parsed:
+                    snapshot_address.balance += stake.shares
+                    stake.parsed = True
 
-        snapshot_address.save()
-        print(str(datetime.now()),
-              'address', address, 'stakes len', len(stakes_for_address), 'shares amount', snapshot_address.balance,
-              flush=True)
+            snapshot_address.save()
+            print(str(datetime.now()), '{id}/{total}'.format(id=count, total=unique_addresses_count),
+                  'address', address, 'stakes len', len(stakes_for_address), 'shares amount', snapshot_address.balance,
+                  flush=True)
+        # else:
+        #     print(
+        #         str(datetime.now()), '{id}/{total}'.format(id=count, total=unique_addresses_count),
+        #         'skipped', flush=True)
+
+        count += 1
 
     print('Shares snapshot ended', str(datetime.now()), flush=True)
 
 
-def make_full_hex_user_snapshot():
+def make_full_hex_user_snapshot(testnet=False):
     print('Full hex user snapshot started', str(datetime.now()), flush=True)
 
     for user in SnapshotAddressHexBalance.objects.all():
@@ -171,12 +186,20 @@ def make_full_hex_user_snapshot():
         hash = sign_info['msg_hash'].hex()
         signature = sign_info['signature']
 
-        hex_user = HexUser(
-            user_address=user.address,
-            hex_amount=total_balance,
-            user_hash=hash,
-            hash_signature=signature
-        )
+        if testnet:
+            hex_user = SnapshotUserTestnet(
+                user_address=user.address,
+                hex_amount=total_balance,
+                user_hash=hash,
+                hash_signature=signature
+            )
+        else:
+            hex_user = SnapshotUser(
+                user_address=user.address,
+                hex_amount=total_balance,
+                user_hash=hash,
+                hash_signature=signature
+            )
 
         hex_user.save()
 

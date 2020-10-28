@@ -1,6 +1,6 @@
 from .web3int import W3int
 from .signing import sign_send_tx
-from .models import HexUser
+from .models import SnapshotUser
 
 import os
 import json
@@ -41,7 +41,19 @@ def load_snapshot_contract(contract_ddress, network='rinkeby'):
 
 
 def load_swap_contract(contract_address, network='rinkeby'):
-    abi_path = os.path.join(BASE_DIR, 'foreignswap.json')
+    abi_path = os.path.join(BASE_DIR, 'abi/foreignswap.json')
+    w3, contract = load_contract(contract_address, abi_path, network)
+    return w3, contract
+
+
+def load_bpd_contract(contract_address, network='rinkeby'):
+    abi_path = os.path.join(BASE_DIR, 'abi/bpd.json')
+    w3, contract = load_contract(contract_address, abi_path, network)
+    return w3, contract
+
+
+def load_subbalance_contract(contract_address, network='rinkeby'):
+    abi_path = os.path.join(BASE_DIR, 'abi/subbalances.json')
     w3, contract = load_contract(contract_address, abi_path, network)
     return w3, contract
 
@@ -82,8 +94,8 @@ def check_snapshot_contract_amounts(all_users):
             writer.writerow([id])
 
 
-def send_next_addresses(max_addresses, gas_price, retry_seconds,):
-    addresses = HexUser.objects.filter(snapshot_tx=None).order_by('id')
+def send_next_addresses(max_addresses, gas_price, retry_seconds):
+    addresses = SnapshotUser.objects.filter(snapshot_tx=None).order_by('id')
     addresses_count = addresses.count()
     print('Starting migration of ', addresses_count, 'addresses with page size', max_addresses,
           'gas price', gas_price, 'retry wait', retry_seconds, flush=True
@@ -213,6 +225,9 @@ def init_foreign_swap_contract(network='rinkeby'):
     print('Initializing Foreigm Swap contract', flush=True)
     load_contracts_dotenv()
 
+    setter_priv = os.getenv('SETTER_PRIV')
+    setter_address = os.getenv('SETTER_ADDRESS')
+
     foreign_swap_address = os.getenv('FOREIGN_SWAP_ADDRESS')
 
     w3, contract = load_swap_contract(foreign_swap_address, network)
@@ -223,6 +238,7 @@ def init_foreign_swap_contract(network='rinkeby'):
     try:
         signer_address = SNAPSHOT_SIGNING_ADDR
         day_seconds = os.getenv('DAY_SECONDS')
+        stake_period = os.getenv('STAKE_PERIOD')
         max_claim_amount = os.getenv('MAX_CLAIM_AMOUNT')
         token_address = os.getenv('TOKEN_ADDRESS')
         auction_address = os.getenv('AUCTION_ADDRESS')
@@ -234,6 +250,7 @@ def init_foreign_swap_contract(network='rinkeby'):
         tx = contract.functions.init(
             signer_address,
             int(day_seconds),
+            int(stake_period),
             int(max_claim_amount),
             token_address,
             auction_address,
@@ -244,8 +261,8 @@ def init_foreign_swap_contract(network='rinkeby'):
         )
         print('tx', tx.__dict__, flush=True)
 
-        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx)
-        print('Done', tx_hash, flush=True)
+        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx, setter_address, setter_priv)
+        print('Done', tx_hash.hex(), flush=True)
         return tx_hash
 
     except Exception as e:
@@ -256,9 +273,12 @@ def init_bpd_contract(network='rinkeby'):
     print('Initializing BPD contract', flush=True)
     load_contracts_dotenv()
 
+    setter_priv = os.getenv('SETTER_PRIV')
+    setter_address = os.getenv('SETTER_ADDRESS')
+
     bpd_address = os.getenv('BPD_ADDRESS')
 
-    w3, contract = load_swap_contract(bpd_address, network)
+    w3, contract = load_bpd_contract(bpd_address, network)
 
     gas_limit = w3.interface.eth.getBlock('latest')['gasLimit']
     chain_id = w3.interface.eth.chainId
@@ -275,8 +295,8 @@ def init_bpd_contract(network='rinkeby'):
         )
         print('tx', tx.__dict__, flush=True)
 
-        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx)
-        print('Done', tx_hash, flush=True)
+        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx, setter_address, setter_priv)
+        print('Done', tx_hash.hex(), flush=True)
         return tx_hash
 
     except Exception as e:
@@ -287,9 +307,12 @@ def init_subbalance_contract(network='rinkeby'):
     print('Initializing SubBalance contract', flush=True)
     load_contracts_dotenv()
 
+    setter_priv = os.getenv('SETTER_PRIV')
+    setter_address = os.getenv('SETTER_ADDRESS')
+
     bpd_address = os.getenv('SUBBALANCE_ADDRESS')
 
-    w3, contract = load_swap_contract(bpd_address, network)
+    w3, contract = load_subbalance_contract(bpd_address, network)
 
     gas_limit = w3.interface.eth.getBlock('latest')['gasLimit']
     chain_id = w3.interface.eth.chainId
@@ -315,8 +338,8 @@ def init_subbalance_contract(network='rinkeby'):
         )
         print('tx', tx.__dict__, flush=True)
 
-        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx)
-        print('Done', tx_hash, flush=True)
+        tx_hash = sign_send_tx(w3.interface, chain_id, gas_limit, tx, setter_address, setter_priv)
+        print('Done', tx_hash.hex(), flush=True)
         return tx_hash
 
     except Exception as e:
@@ -325,5 +348,7 @@ def init_subbalance_contract(network='rinkeby'):
 
 def init_second_part(network='rinkeby'):
     init_foreign_swap_contract(network)
+    time.sleep(70)
     init_bpd_contract(network)
+    time.sleep(70)
     init_subbalance_contract(network)
