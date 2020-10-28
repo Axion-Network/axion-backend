@@ -14,7 +14,7 @@ class HexAddressViewSetPagination(LimitOffsetPagination):
 
 
 class HexAddressViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = SnapshotUserTestnet.objects.all()
+    queryset = SnapshotUser.objects.all()
     lookup_field = 'user_address'
 
     serializer_class = HexAddressSerializer

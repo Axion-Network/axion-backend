@@ -1,9 +1,9 @@
 from rest_framework import serializers
 
-from .models import HexUser
+from .models import SnapshotUser
 
 
 class HexAddressSerializer(serializers.ModelSerializer):
     class Meta:
-        model = HexUser
+        model = SnapshotUser
         exclude = ['id', 'snapshot_tx', 'tx_checked']
