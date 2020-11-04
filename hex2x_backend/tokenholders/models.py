@@ -9,6 +9,9 @@ class TokenTransfer(models.Model):
     block_number = models.IntegerField(null=True, default=None)
     parsed = models.BooleanField(default=False)
 
+class TokenTransferHex2t(TokenTransfer):
+    pass
+
 
 class TokenStakeStart(models.Model):
     address = models.CharField(max_length=512)
