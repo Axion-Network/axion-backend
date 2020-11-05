@@ -3,7 +3,7 @@ from datetime import datetime
 from hex2x_backend.tokenholders.models import TokenStakeStart, TokenStakeEnd, TokenTransfer, TokenTransferHex2t
 from hex2x_backend.tokenholders.common import HEX_WIN_TOKEN_ADDRESS
 from .models import HexUser, SnapshotOpenedStake, SnapshotAddressHexBalance, SnapshotAddressSharesBalance, \
-    SnapshotStake, SnapshotUser, SnapshotUserTestnet
+    SnapshotStake, SnapshotUser, SnapshotUserTestnet, SnapshotAddressHex2tBalance
 from holder_parsing import get_hex_balance_for_address, get_hex_balance_for_multiple_address
 from .signing import get_user_signature
 from .web3int import W3int
@@ -95,9 +95,12 @@ def make_persisted_stake_snapshot():
 
 
 def make_balance_snapshot(token='HEX'):
+    if token not in ['HEX', 'HEX2T']:
+        raise Exception('token must be HEX or HEX2T')
+
     if token == 'HEX':
         all_transfers = TokenTransfer.objects.all().order_by('id')
-    elif token == 'HEX2T':
+    else:
         all_transfers = TokenTransferHex2t.objects.all().order_by('id')
 
     print('Balance snapshot started', flush=True)
@@ -112,7 +115,12 @@ def make_balance_snapshot(token='HEX'):
             continue
 
         if transfer.from_address != ETHEREUM_ZERO_ADDRESS:
-            snapshot_address_1, created = SnapshotAddressHexBalance.objects.get_or_create(address=transfer.from_address)
+            if token == 'HEX':
+                snapshot_address_1, created = SnapshotAddressHexBalance.objects.get_or_create(
+                    address=transfer.from_address)
+            else:
+                snapshot_address_1, created = SnapshotAddressHex2tBalance.objects.get_or_create(
+                    address=transfer.from_address)
             snapshot_address_1.balance -= transfer.amount
             snapshot_address_1.save()
             print(str(datetime.now()), 'Block', transfer.block_number, 'transfer', transfer.id,
@@ -121,7 +129,12 @@ def make_balance_snapshot(token='HEX'):
                   )
 
         if transfer.to_address not in [ETHEREUM_ZERO_ADDRESS, HEX_WIN_TOKEN_ADDRESS]:
-            snapshot_address_2, created = SnapshotAddressHexBalance.objects.get_or_create(address=transfer.to_address)
+            if token == 'HEX':
+                snapshot_address_2, created = SnapshotAddressHexBalance.objects.get_or_create(
+                    address=transfer.to_address)
+            else:
+                snapshot_address_2, created = SnapshotAddressHex2tBalance.objects.get_or_create(
+                    address=transfer.to_address)
             snapshot_address_2.balance += transfer.amount
             snapshot_address_2.save()
             print(str(datetime.now()), 'Block', transfer.block_number, 'transfer', transfer.id,

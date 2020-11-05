@@ -70,6 +70,9 @@ class SnapshotAddressSharesBalance(models.Model):
     balance = models.DecimalField(max_digits=len(str(2 ** 256)), decimal_places=0, default=0)
     balance_old = models.DecimalField(max_digits=len(str(2**256)), decimal_places=0, default=0)
 
+class SnapshotAddressHex2tBalance(models.Model):
+    address = models.CharField(max_length=512)
+    balance = models.DecimalField(max_digits=len(str(2**256)), decimal_places=0, default=0)
 
 # class UserBalance(models.Model):
 #     address = models.CharField(max_length=512)
