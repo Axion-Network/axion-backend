@@ -4,7 +4,7 @@ from hex2x_backend.snapshot.web3int import W3int
 from .models import TokenTransferHex2t
 from .transfers import get_transfer_logs
 
-HEX2T_TOKEN_ADDRESS = '0xed1199093b1abd07a368dd1c0cdc77d8517ba2a0'
+HEX2T_TOKEN_ADDRESS = '0xEd1199093b1aBd07a368Dd1C0Cdc77D8517BA2A0'
 CONTRACT_CREATION_BLOCK = 10164763
 NATIVE_SWAP_LAUNCHED_BLOCK = 11176347
 
