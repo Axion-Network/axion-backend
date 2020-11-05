@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from hex2x_backend.tokenholders.models import TokenStakeStart, TokenStakeEnd, TokenTransfer
+from hex2x_backend.tokenholders.models import TokenStakeStart, TokenStakeEnd, TokenTransfer, TokenTransferHex2t
 from hex2x_backend.tokenholders.common import HEX_WIN_TOKEN_ADDRESS
 from .models import HexUser, SnapshotOpenedStake, SnapshotAddressHexBalance, SnapshotAddressSharesBalance, \
     SnapshotStake, SnapshotUser, SnapshotUserTestnet
@@ -94,8 +94,11 @@ def make_persisted_stake_snapshot():
               )
 
 
-def make_balance_snapshot():
-    all_transfers = TokenTransfer.objects.all().order_by('id')
+def make_balance_snapshot(token='HEX'):
+    if token == 'HEX':
+        all_transfers = TokenTransfer.objects.all().order_by('id')
+    elif token == 'HEX2T':
+        all_transfers = TokenTransferHex2t.objects.all().order_by('id')
 
     print('Balance snapshot started', flush=True)
     print(str(datetime.now()), flush=True)
