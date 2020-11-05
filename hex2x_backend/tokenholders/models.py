@@ -9,7 +9,7 @@ class TokenTransfer(models.Model):
     block_number = models.IntegerField(null=True, default=None)
     parsed = models.BooleanField(default=False)
 
-class TokenTransfer(models.Model):
+class TokenTransferHex2t(models.Model):
     from_address = models.CharField(max_length=512)
     to_address = models.CharField(max_length=512)
     amount = models.DecimalField(max_digits=len(str(2**256)), decimal_places=0, null=True, default=None)
