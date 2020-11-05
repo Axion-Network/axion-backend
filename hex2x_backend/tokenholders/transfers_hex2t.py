@@ -13,7 +13,7 @@ def load_hex2t_contract(web3_interface):
     with open('./HEX2T_abi.json', 'r') as f:
         erc20_abi = json.loads(f.read())
 
-    hex_contract = web3_interface.eth.contract(address=HEX_WIN_TOKEN_ADDRESS, abi=erc20_abi)
+    hex_contract = web3_interface.eth.contract(address=HEX2T_TOKEN_ADDRESS, abi=erc20_abi)
     return hex_contract
 
 def scan_token_hex2t(from_block, to_block):
