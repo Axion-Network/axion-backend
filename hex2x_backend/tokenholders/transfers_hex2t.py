@@ -25,7 +25,7 @@ def scan_token_hex2t(from_block, to_block):
 
 
 def parse_and_save_transfers(from_block, to_block):
-    events = scan_token(from_block, to_block)
+    events = scan_token_hex2t(from_block, to_block)
 
     print('iterating from', from_block, 'to', to_block, flush=True)
     print('events in batch:', len(events), flush=True)

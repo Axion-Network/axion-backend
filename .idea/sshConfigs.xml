@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig host="5.9.121.164" id="b1744c99-62ae-4a10-8ff7-453ea3c5a5a9" keyPath="$USER_HOME$/.ssh/id_rsa" port="22" customName="fake back for test (max)" nameFormat="CUSTOM">
+        <option name="customName" value="fake back for test (max)" />
+      </sshConfig>
+      <sshConfig host="95.217.212.26" id="4a5f44e4-e185-4bff-87e3-8bb9772aeb4d" keyPath="$USER_HOME$/.ssh/id_rsa" port="22" customName="ssd parity" nameFormat="CUSTOM">
+        <option name="customName" value="ssd parity" />
+      </sshConfig>
+    </configs>
+  </component>
+</project>
