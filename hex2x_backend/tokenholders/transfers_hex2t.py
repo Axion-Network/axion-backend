@@ -7,7 +7,7 @@ from .transfers import get_transfer_logs
 HEX2T_TOKEN_ADDRESS = '0xEd1199093b1aBd07a368Dd1C0Cdc77D8517BA2A0'
 # CONTRACT_CREATION_BLOCK = 10164763
 CONTRACT_CREATION_BLOCK = 11174763
-NATIVE_SWAP_LAUNCHED_BLOCK = 11176347
+NATIVE_SWAP_LAUNCHED_BLOCK = 11176348
 
 
 def load_hex2t_contract(web3_interface):
@@ -65,7 +65,7 @@ def parse_and_save_transfers(from_block, to_block):
 def iterate_dump_transfers(start_block, stop_block):
     step_block = start_block + 1000
 
-    while step_block <= stop_block:
+    while step_block < stop_block:
         print('Saving events from', start_block, 'to', step_block, 'blocks', flush=True)
         parse_and_save_transfers(start_block, step_block)
         print('Batch saved', flush=True)
