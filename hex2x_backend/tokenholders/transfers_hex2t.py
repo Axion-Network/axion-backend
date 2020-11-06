@@ -52,7 +52,7 @@ def parse_and_save_transfers(from_block, to_block):
         if not created:
             print(
                 'hash %s skipped due: already saved (id: %s), from blockNo: %s' %
-                (tx_hash.hex(), exist_transfer.first().id, block
+                (tx_hash.hex(), transfer.id, block
                  ), flush=True)
         else:
             transfer.save()
