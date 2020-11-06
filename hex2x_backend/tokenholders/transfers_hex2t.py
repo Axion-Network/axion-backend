@@ -5,7 +5,8 @@ from .models import TokenTransferHex2t
 from .transfers import get_transfer_logs
 
 HEX2T_TOKEN_ADDRESS = '0xEd1199093b1aBd07a368Dd1C0Cdc77D8517BA2A0'
-CONTRACT_CREATION_BLOCK = 10164763
+# CONTRACT_CREATION_BLOCK = 10164763
+CONTRACT_CREATION_BLOCK = 11174763
 NATIVE_SWAP_LAUNCHED_BLOCK = 11176347
 
 
@@ -37,7 +38,7 @@ def parse_and_save_transfers(from_block, to_block):
         tx_hash = event['transactionHash']
         block = event['blockNumber']
 
-        exist_transfer = TokenTransferHex2t.objects.filter(tx_hash=tx_hash).count() > 0
+        exist_transfer = TokenTransferHex2t.objects.filter(tx_hash=tx_hash.hex())
 
         if exist_transfer:
             print('hash %s skipped due: already saved, blockNo: %s' % (tx_hash, block), flush=True)
