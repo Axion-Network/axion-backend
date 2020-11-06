@@ -38,21 +38,23 @@ def parse_and_save_transfers(from_block, to_block):
         tx_hash = event['transactionHash']
         block = event['blockNumber']
 
-        exist_transfer = TokenTransferHex2t.objects.filter(tx_hash=tx_hash.hex())
+        # exist_transfer = TokenTransferHex2t.objects.filter(tx_hash=tx_hash.hex())
+        # exist_transfer = TokenTransferHex2t.
 
-        if exist_transfer:
+        (transfer, created) = TokenTransferHex2t.objects.get_or_create(
+            from_address=from_addr,
+            to_address=to_addr,
+            amount=amount,
+            tx_hash=tx_hash.hex(),
+            block_number=block
+        )
+
+        if not created:
             print(
                 'hash %s skipped due: already saved (id: %s), from blockNo: %s' %
                 (tx_hash.hex(), exist_transfer.first().id, block
                  ), flush=True)
         else:
-            transfer = TokenTransferHex2t(
-                from_address=from_addr,
-                to_address=to_addr,
-                amount=amount,
-                tx_hash=tx_hash.hex(),
-                block_number=block
-            )
             transfer.save()
             print('Saved transfer',
                   transfer.id, transfer.block_number, transfer.from_address, transfer.to_address, transfer.amount,
