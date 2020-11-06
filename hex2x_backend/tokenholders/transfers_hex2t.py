@@ -72,6 +72,9 @@ def iterate_dump_transfers(start_block, stop_block):
         start_block += 1000
         step_block = start_block + 1000
 
+        if step_block > stop_block:
+            step_block = stop_block
+
 
 def iterate_dump_transfers_all():
     iterate_dump_transfers(CONTRACT_CREATION_BLOCK, NATIVE_SWAP_LAUNCHED_BLOCK)
