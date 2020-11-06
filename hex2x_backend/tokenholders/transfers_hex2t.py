@@ -5,8 +5,7 @@ from .models import TokenTransferHex2t
 from .transfers import get_transfer_logs
 
 HEX2T_TOKEN_ADDRESS = '0xEd1199093b1aBd07a368Dd1C0Cdc77D8517BA2A0'
-# CONTRACT_CREATION_BLOCK = 10164763
-CONTRACT_CREATION_BLOCK = 11174763
+CONTRACT_CREATION_BLOCK = 10164763
 NATIVE_SWAP_LAUNCHED_BLOCK = 11176348
 
 
@@ -75,7 +74,7 @@ def iterate_dump_transfers(start_block, stop_block):
         print('block diff', block_diff, flush=True)
 
         if (block_diff <= 1000) and (block_diff > 0):
-            step_block = start_block + block_diff + 1
+            step_block = start_block + block_diff
         else:
             step_block = start_block + 1000
 
