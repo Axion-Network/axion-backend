@@ -41,7 +41,10 @@ def parse_and_save_transfers(from_block, to_block):
         exist_transfer = TokenTransferHex2t.objects.filter(tx_hash=tx_hash.hex())
 
         if exist_transfer:
-            print('hash %s skipped due: already saved, blockNo: %s' % (tx_hash, block), flush=True)
+            print(
+                'hash %s skipped due: already saved (id: %s), from blockNo: %s' %
+                (tx_hash.hex(), exist_transfer.id, block
+                 ), flush=True)
         else:
             transfer = TokenTransferHex2t(
                 from_address=from_addr,
