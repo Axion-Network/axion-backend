@@ -75,7 +75,7 @@ def iterate_dump_transfers(start_block, stop_block):
         print('block diff', block_diff, flush=True)
 
         if (block_diff <= 1000) and (block_diff > 0):
-            step_block = block_diff
+            step_block = start_block + block_diff
         else:
             step_block = start_block + 1000
 
