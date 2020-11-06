@@ -37,7 +37,7 @@ def parse_and_save_transfers(from_block, to_block):
         tx_hash = event['transactionHash']
         block = event['blockNumber']
 
-        exist_transfer = TokenTransferHex2t.objects.filter(tx_hash=tx_hash)
+        exist_transfer = TokenTransferHex2t.objects.filter(tx_hash=tx_hash).count > 0
 
         if exist_transfer:
             print('hash %s skipped due: already saved, blockNo: %s' % (tx_hash, block), flush=True)
@@ -51,7 +51,8 @@ def parse_and_save_transfers(from_block, to_block):
             )
             transfer.save()
             print('Saved transfer',
-                  transfer.id, transfer.from_address, transfer.to_address, transfer.amount, transfer.tx_hash
+                  transfer.id, transfer.block_number, transfer.from_address, transfer.to_address, transfer.amount,
+                  transfer.tx_hash
                   )
 
 
