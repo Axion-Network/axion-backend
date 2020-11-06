@@ -16,6 +16,7 @@ def load_hex2t_contract(web3_interface):
     hex_contract = web3_interface.eth.contract(address=HEX2T_TOKEN_ADDRESS, abi=erc20_abi)
     return hex_contract
 
+
 def scan_token_hex2t(from_block, to_block):
     w3 = W3int('parity')
     token = load_hex2t_contract(w3.interface_http)
@@ -36,17 +37,22 @@ def parse_and_save_transfers(from_block, to_block):
         tx_hash = event['transactionHash']
         block = event['blockNumber']
 
-        transfer = TokenTransferHex2t(
-            from_address=from_addr,
-            to_address=to_addr,
-            amount=amount,
-            tx_hash=tx_hash.hex(),
-            block_number=block
-        )
-        transfer.save()
-        print('Saved transfer',
-              transfer.id, transfer.from_address, transfer.to_address, transfer.amount, transfer.tx_hash
-              )
+        exist_transfer = TokenTransferHex2t.objects.filter(tx_hash=tx_hash)
+
+        if exist_transfer:
+            print('hash %s skipped due: already saved, blockNo: %s' % (tx_hash, block), flush=True)
+        else:
+            transfer = TokenTransferHex2t(
+                from_address=from_addr,
+                to_address=to_addr,
+                amount=amount,
+                tx_hash=tx_hash.hex(),
+                block_number=block
+            )
+            transfer.save()
+            print('Saved transfer',
+                  transfer.id, transfer.from_address, transfer.to_address, transfer.amount, transfer.tx_hash
+                  )
 
 
 def iterate_dump_transfers(start_block, stop_block):
