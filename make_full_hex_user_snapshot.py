@@ -8,4 +8,4 @@ django.setup()
 from hex2x_backend.snapshot.api import make_full_hex_user_snapshot
 
 if __name__ == '__main__':
-    make_full_hex_user_snapshot(testnet=True)
+    make_full_hex_user_snapshot(testnet=False)
